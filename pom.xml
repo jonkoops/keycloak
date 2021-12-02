@@ -126,6 +126,8 @@
 
         <!-- Openshift -->
         <version.com.openshift.openshift-restclient-java>8.0.0.Final</version.com.openshift.openshift-restclient-java>
+        <version.com.squareup.okhttp3.okhttp>3.9.0.redhat-3</version.com.squareup.okhttp3.okhttp>
+        <version.com.squareup.okio.okio>1.13.0.redhat-3</version.com.squareup.okio.okio>
 
         <!-- Others -->
         <commons-lang.version>2.6</commons-lang.version>
@@ -1422,6 +1424,16 @@
                 <groupId>com.openshift</groupId>
                 <artifactId>openshift-restclient-java</artifactId>
                 <version>${version.com.openshift.openshift-restclient-java}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.squareup.okhttp3</groupId>
+                <artifactId>okhttp</artifactId>
+                <version>${version.com.squareup.okhttp3.okhttp}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.squareup.okio</groupId>
+                <artifactId>okio</artifactId>
+                <version>${version.com.squareup.okio.okio}</version>
             </dependency>
 
             <dependency>

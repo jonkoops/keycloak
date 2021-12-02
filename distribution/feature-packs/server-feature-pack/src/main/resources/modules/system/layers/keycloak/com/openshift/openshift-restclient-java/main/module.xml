@@ -22,13 +22,15 @@
 
     <resources>
         <artifact name="${com.openshift:openshift-restclient-java}"/>
+        <artifact name="${com.squareup.okhttp3:okhttp}"/>
+        <artifact name="${com.squareup.okio:okio}"/>
     </resources>
 
     <dependencies>
-        <module name="com.squareup.okhttp3"/>
         <module name="org.apache.commons.lang"/>
         <module name="org.jboss.dmr"/>
         <module name="org.apache.log4j"/>
         <module name="org.slf4j"/>
+        <module name="java.logging"/>
     </dependencies>
 </module>
