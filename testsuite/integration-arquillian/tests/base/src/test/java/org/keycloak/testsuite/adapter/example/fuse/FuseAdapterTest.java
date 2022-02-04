@@ -160,9 +160,6 @@ public class FuseAdapterTest extends AbstractExampleAdapterTest {
     @Test
     @AppServerContainer(value = ContainerConstants.APP_SERVER_FUSE63, skip = true)
     public void hawtio2LoginTest() throws Exception {
-
-        Assume.assumeTrue("This test doesn't work with phantomjs", !"phantomjs".equals(System.getProperty("js.browser")));
-
         hawtio2Page.navigateTo();
         WaitUtils.waitForPageToLoad();
 
@@ -369,7 +366,6 @@ public class FuseAdapterTest extends AbstractExampleAdapterTest {
         WaitUtils.waitForPageToLoad();
 
         WaitUtils.pause(2500);
-        customerPortal.navigateTo();//needed for phantomjs
         WaitUtils.waitForPageToLoad();
         customerPortal.clickAdminInterfaceLink();
         WaitUtils.waitForPageToLoad();

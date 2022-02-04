@@ -34,7 +34,7 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.keycloak.testsuite.AssertEvents;
 import org.keycloak.testsuite.util.ContainerAssume;
 import org.keycloak.testsuite.util.OAuthClient;
-import org.keycloak.testsuite.util.PhantomJSBrowser;
+import org.keycloak.testsuite.util.JavascriptBrowser;
 import org.openqa.selenium.WebDriver;
 
 import javax.ws.rs.core.Response;
@@ -55,12 +55,12 @@ import static org.keycloak.authentication.authenticators.x509.X509AuthenticatorC
 public class X509DirectGrantTest extends AbstractX509AuthenticationTest {
 
     @Drone
-    @PhantomJSBrowser
-    private WebDriver phantomJS;
+    @JavascriptBrowser
+    private WebDriver jsBrowser;
 
     @Before
     public void replaceTheDefaultDriver() {
-        replaceDefaultWebDriver(phantomJS);
+        replaceDefaultWebDriver(jsBrowser);
     }
 
     @Test

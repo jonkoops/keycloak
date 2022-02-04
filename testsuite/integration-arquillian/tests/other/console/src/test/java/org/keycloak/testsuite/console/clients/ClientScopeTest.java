@@ -23,7 +23,6 @@ package org.keycloak.testsuite.console.clients;
 
 import org.jboss.arquillian.graphene.page.Page;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.keycloak.representations.idm.ClientMappingsRepresentation;
 import org.keycloak.representations.idm.ClientRepresentation;
@@ -62,7 +61,6 @@ public class ClientScopeTest extends AbstractClientTest {
     }
     
     @Test
-    @Ignore //phantomjs sometimes doens't enable "Add Selected >>" button when role is selected
     public void clientScopeTest() {
         assertTrue(found.isFullScopeAllowed());
         clientScopePage.scopeForm().setFullScopeAllowed(false);
@@ -73,11 +71,11 @@ public class ClientScopeTest extends AbstractClientTest {
         assertNull(getAllMappingsRepresentation().getRealmMappings());
         assertNull(getAllMappingsRepresentation().getClientMappings());
         
-        clientScopePage.roleForm().addRealmRole("offline_access");//fails with phantomjs
+        clientScopePage.roleForm().addRealmRole("offline_access");
         assertAlertSuccess();
         
         clientScopePage.roleForm().selectClientRole("account");
-        clientScopePage.roleForm().addClientRole("view-profile");//fails with phantomjs
+        clientScopePage.roleForm().addClientRole("view-profile");
         assertAlertSuccess();
         
         found = findClientByClientId(TEST_CLIENT_ID);
@@ -89,9 +87,9 @@ public class ClientScopeTest extends AbstractClientTest {
         assertEquals("view-profile", clientMappings.get("account").getMappings().get(0).getName());
         
         clientScopePage.roleForm().removeAssignedRole("offline_access");
-        assertAlertSuccess();//fails with phantomjs
+        assertAlertSuccess();
         clientScopePage.roleForm().removeAssignedClientRole("view-profile");
-        assertAlertSuccess();//fails with phantomjs
+        assertAlertSuccess();
         
         assertNull(getAllMappingsRepresentation().getRealmMappings());
         assertNull(getAllMappingsRepresentation().getClientMappings());

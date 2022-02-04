@@ -87,8 +87,8 @@ public class ClientCredentialsTest extends AbstractClientTest {
         generatePrivateKeysPage.generateForm().clickGenerateAndDownload();
         assertAlertDanger();
         
-//        generatePrivateKeysPage.generateForm().setKeyPassword("pass");
-//        generatePrivateKeysPage.generateForm().setStorePassword("pass2");
-//        assertAlertSuccess();//fails with phantomjs
+        generatePrivateKeysPage.generateForm().setKeyPassword("pass");
+        generatePrivateKeysPage.generateForm().setStorePassword("pass2");
+        assertAlertSuccess();
     }
 }

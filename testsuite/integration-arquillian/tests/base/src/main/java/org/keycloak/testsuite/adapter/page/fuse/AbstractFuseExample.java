@@ -44,20 +44,4 @@ public abstract class AbstractFuseExample extends AppServerContextRoot {
         }
         return url;
     }
-    
-    /*
-     *  non-javadoc
-     *
-     *  When run tests with phantomjs customer or prutuct portal page isn't properly
-     *  loaded. This method reloads page in such case.
-     */
-    @Override
-    public void navigateTo() {
-        super.navigateTo();
-        
-        if (DroneUtils.getCurrentDriver().getPageSource().contains("<html><head></head><body></body></html>")) {
-            log.debug("Page wasn't properly loaded - redirecting.");
-            super.navigateTo();
-        }
-    }
 }

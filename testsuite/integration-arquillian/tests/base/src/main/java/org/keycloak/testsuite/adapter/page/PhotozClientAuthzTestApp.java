@@ -141,7 +141,7 @@ public class PhotozClientAuthzTestApp extends AbstractPageWithInjectedUrl {
 
     public void logOut() {
         navigateTo();
-        waitUntilElement(signOutButton).is().clickable(); // Sometimes doesn't work in PhantomJS!
+        waitUntilElement(signOutButton).is().clickable();
         clickLink(signOutButton);
     }
     

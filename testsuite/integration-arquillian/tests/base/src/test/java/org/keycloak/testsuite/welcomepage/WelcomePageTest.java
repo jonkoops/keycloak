@@ -35,7 +35,7 @@ import org.keycloak.testsuite.auth.page.WelcomePage;
 import org.keycloak.testsuite.auth.page.login.OIDCLogin;
 import org.keycloak.testsuite.util.ContainerAssume;
 import org.keycloak.testsuite.util.DroneUtils;
-import org.keycloak.testsuite.util.PhantomJSBrowser;
+import org.keycloak.testsuite.util.JavascriptBrowser;
 import org.openqa.selenium.WebDriver;
 
 import java.net.InetAddress;
@@ -56,15 +56,15 @@ import static org.keycloak.testsuite.util.URLUtils.navigateToUri;
 public class WelcomePageTest extends AbstractKeycloakTest {
 
     @Drone
-    @PhantomJSBrowser
-    private WebDriver phantomJS;
+    @JavascriptBrowser
+    private WebDriver jsBrowser;
 
     @Page
-    @PhantomJSBrowser
+    @JavascriptBrowser
     protected OIDCLogin loginPage;
 
     @Page
-    @PhantomJSBrowser
+    @JavascriptBrowser
     protected WelcomePage welcomePage;
 
     @Override
@@ -87,7 +87,7 @@ public class WelcomePageTest extends AbstractKeycloakTest {
         Assume.assumeThat("Test skipped",
                 suiteContext.getAuthServerInfo().isJBossBased(),
                 Matchers.is(true));
-        DroneUtils.replaceDefaultWebDriver(this, phantomJS);
+        DroneUtils.replaceDefaultWebDriver(this, jsBrowser);
         setDefaultPageUriParameters();
     }
 

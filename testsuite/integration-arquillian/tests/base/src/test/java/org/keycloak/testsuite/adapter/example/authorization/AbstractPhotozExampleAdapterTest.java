@@ -471,7 +471,7 @@ public abstract class AbstractPhotozExampleAdapterTest extends AbstractBasePhoto
 
         clientPage.requestResourceProtectedAllScope(this::assertWasDenied);
         clientPage.requestResourceProtectedAnyScope(response -> {
-            assertThat(response.get("status"), anyOf(is(equalTo(404L)), is(equalTo(0L)))); // PhantomJS returns 0 and chrome 404
+            assertThat(response.get("status"), is(equalTo(404L)));
         });
     }
 }

@@ -20,7 +20,7 @@ package org.keycloak.testsuite.x509;
 
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.keycloak.testsuite.AssertEvents;
-import org.keycloak.testsuite.util.PhantomJSBrowser;
+import org.keycloak.testsuite.util.JavascriptBrowser;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,13 +59,13 @@ public class X509BrowserLoginTest extends AbstractX509AuthenticationTest {
 
 
     @Drone
-    @PhantomJSBrowser
-    private WebDriver phantomJS;
+    @JavascriptBrowser
+    private WebDriver jsBrowser;
 
 
     @Before
     public void replaceTheDefaultDriver() {
-        replaceDefaultWebDriver(phantomJS);
+        replaceDefaultWebDriver(jsBrowser);
     }
 
 

@@ -36,7 +36,7 @@ import static org.keycloak.authentication.authenticators.x509.X509AuthenticatorC
 
 import io.undertow.Undertow;
 import io.undertow.server.handlers.BlockingHandler;
-import org.keycloak.testsuite.util.PhantomJSBrowser;
+import org.keycloak.testsuite.util.JavascriptBrowser;
 import org.openqa.selenium.WebDriver;
 
 /**
@@ -57,12 +57,12 @@ public class X509OCSPResponderSpecificCertTest extends AbstractX509Authenticatio
     private Undertow ocspResponder;
 
     @Drone
-    @PhantomJSBrowser
-    private WebDriver phantomJS;
+    @JavascriptBrowser
+    private WebDriver jsBrowser;
 
     @Before
     public void replaceTheDefaultDriver() {
-        replaceDefaultWebDriver(phantomJS);
+        replaceDefaultWebDriver(jsBrowser);
     }
 
     @Test

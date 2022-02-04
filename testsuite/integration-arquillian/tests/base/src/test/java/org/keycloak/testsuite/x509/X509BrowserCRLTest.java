@@ -29,7 +29,7 @@ import org.keycloak.models.Constants;
 import org.keycloak.representations.idm.AuthenticatorConfigRepresentation;
 import org.keycloak.testsuite.pages.AppPage;
 import org.keycloak.testsuite.util.ContainerAssume;
-import org.keycloak.testsuite.util.PhantomJSBrowser;
+import org.keycloak.testsuite.util.JavascriptBrowser;
 import org.keycloak.testsuite.util.WaitUtils;
 import org.openqa.selenium.WebDriver;
 
@@ -46,13 +46,13 @@ public class X509BrowserCRLTest extends AbstractX509AuthenticationTest {
     public static CRLRule crlRule = new CRLRule();
 
     @Drone
-    @PhantomJSBrowser
-    private WebDriver phantomJS;
+    @JavascriptBrowser
+    private WebDriver jsBrowser;
 
 
     @Before
     public void replaceTheDefaultDriver() {
-        replaceDefaultWebDriver(phantomJS);
+        replaceDefaultWebDriver(jsBrowser);
     }
 
 
