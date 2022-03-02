@@ -87,8 +87,9 @@ public class ConfigMigrationTest {
     @Test
     public void testDomain() throws IOException {
         final Set<List<String>> ignoredPaths = new HashSet<>();
-        // KEYCLOAK-18505 Ignore some keys
+        // KEYCLOAK-18505 Ignore some keys - 15.0.2 uses different settings - for newer versions everything works as expected
         ignoredPaths.add(getModelNode("root", "result", "[logging]", "result", "console-handler"));
+        ignoredPaths.add(getModelNode("root", "result", "[infinispan]", "result", "cache-container", "hibernate", "invalidation-cache", "entity", "component", "transaction", "mode"));
 
         compareConfigs("master-domain-standalone.txt", "migrated-domain-standalone.txt", ignoredPaths);
         compareConfigs("master-domain-clustered.txt", "migrated-domain-clustered.txt", ignoredPaths);
