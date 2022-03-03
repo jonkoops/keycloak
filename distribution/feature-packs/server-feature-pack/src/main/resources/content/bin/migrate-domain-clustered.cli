@@ -621,6 +621,12 @@ if (outcome == success) of /profile=$clusteredProfile/subsystem=ejb3/service=rem
     echo
 end-if
 
+if (outcome == success) of /profile=$clusteredProfile/subsystem=infinispan/cache-container=web/replicated-cache=routing:read-resource
+    echo Removing replicated cache and replace it with distributed cache
+    /profile=$clusteredProfile/subsystem=infinispan/cache-container=web/replicated-cache=routing/:remove
+    echo
+end-if
+
 if (outcome == failed) of /profile=$clusteredProfile/subsystem=infinispan/cache-container=web/distributed-cache=routing:read-resource
     echo Adding distributed cache routing to web cache container to infinispan subsystem
     /profile=$clusteredProfile/subsystem=infinispan/cache-container=web/distributed-cache=routing/:add
