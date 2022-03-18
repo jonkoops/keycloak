@@ -658,4 +658,48 @@ if (outcome == failed) of /profile=$standaloneProfile/subsystem=infinispan/cache
     echo
 end-if
 
+# Adding expiration for local caches to enable garbage collection / RHSSO-1937
+
+# Add expiration lifespan configuration to every local cache.
+if (result == undefined) of /subsystem=infinispan/cache-container=keycloak/local-cache=work/component=expiration/:read-attribute(name=lifespan)
+    echo Setting expiration lifespan for 'work' local-cache
+    /subsystem=infinispan/cache-container=keycloak/local-cache=work/component=expiration/:write-attribute(name=lifespan,value=900000000000000000)
+    echo
+end-if
+if (result == undefined) of /subsystem=infinispan/cache-container=keycloak/local-cache=sessions/component=expiration/:read-attribute(name=lifespan)
+    echo Setting expiration lifespan for 'sessions' local-cache
+    /subsystem=infinispan/cache-container=keycloak/local-cache=sessions/component=expiration/:write-attribute(name=lifespan,value=900000000000000000)
+    echo
+end-if
+if (result == undefined) of /subsystem=infinispan/cache-container=keycloak/local-cache=clientSessions/component=expiration/:read-attribute(name=lifespan)
+    echo Setting expiration lifespan for 'clientSessions' local-cache
+    /subsystem=infinispan/cache-container=keycloak/local-cache=clientSessions/component=expiration/:write-attribute(name=lifespan,value=900000000000000000)
+    echo
+end-if
+if (result == undefined) of /subsystem=infinispan/cache-container=keycloak/local-cache=offlineSessions/component=expiration/:read-attribute(name=lifespan)
+    echo Setting expiration lifespan for 'offlineSessions' local-cache
+    /subsystem=infinispan/cache-container=keycloak/local-cache=offlineSessions/component=expiration/:write-attribute(name=lifespan,value=900000000000000000)
+    echo
+end-if
+if (result == undefined) of /subsystem=infinispan/cache-container=keycloak/local-cache=offlineClientSessions/component=expiration/:read-attribute(name=lifespan)
+    echo Setting expiration lifespan for 'offlineClientSessions' local-cache
+    /subsystem=infinispan/cache-container=keycloak/local-cache=offlineClientSessions/component=expiration/:write-attribute(name=lifespan,value=900000000000000000)
+    echo
+end-if
+if (result == undefined) of /subsystem=infinispan/cache-container=keycloak/local-cache=authenticationSessions/component=expiration/:read-attribute(name=lifespan)
+    echo Setting expiration lifespan for 'authenticationSessions' local-cache
+    /subsystem=infinispan/cache-container=keycloak/local-cache=authenticationSessions/component=expiration/:write-attribute(name=lifespan,value=900000000000000000)
+    echo
+end-if
+if (result == undefined) of /subsystem=infinispan/cache-container=keycloak/local-cache=loginFailures/component=expiration/:read-attribute(name=lifespan)
+    echo Setting expiration lifespan for 'loginFailures' local-cache
+    /subsystem=infinispan/cache-container=keycloak/local-cache=loginFailures/component=expiration/:write-attribute(name=lifespan,value=900000000000000000)
+    echo
+end-if
+if (result == undefined) of /subsystem=infinispan/cache-container=keycloak/local-cache=actionTokens/component=expiration/:read-attribute(name=lifespan)
+    echo Setting expiration lifespan for 'actionTokens' local-cache
+    /subsystem=infinispan/cache-container=keycloak/local-cache=actionTokens/component=expiration/:write-attribute(name=lifespan,value=900000000000000000)
+    echo
+end-if
+
 echo *** End Migration of /profile=$standaloneProfile ***

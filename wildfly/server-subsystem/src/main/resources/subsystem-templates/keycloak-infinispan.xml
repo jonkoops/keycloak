@@ -30,13 +30,27 @@
                 <local-cache name="users">
                     <heap-memory size="10000"/>
                 </local-cache>
-                <local-cache name="sessions"/>
-                <local-cache name="authenticationSessions"/>
-                <local-cache name="offlineSessions"/>
-                <local-cache name="clientSessions"/>
-                <local-cache name="offlineClientSessions"/>
-                <local-cache name="loginFailures"/>
-                <local-cache name="work"/>
+                <local-cache name="sessions">
+                    <expiration lifespan="900000000000000000"/>
+                </local-cache>
+                <local-cache name="authenticationSessions">
+                    <expiration lifespan="900000000000000000"/>
+                </local-cache>
+                <local-cache name="offlineSessions">
+                    <expiration lifespan="900000000000000000"/>
+                </local-cache>
+                <local-cache name="clientSessions">
+                    <expiration lifespan="900000000000000000"/>
+                </local-cache>
+                <local-cache name="offlineClientSessions">
+                    <expiration lifespan="900000000000000000"/>
+                </local-cache>
+                <local-cache name="loginFailures">
+                    <expiration lifespan="900000000000000000"/>
+                </local-cache>
+                <local-cache name="work">
+                    <expiration lifespan="900000000000000000"/>
+                </local-cache>
                 <local-cache name="authorization">
                     <heap-memory size="10000"/>
                 </local-cache>
@@ -46,7 +60,7 @@
                 </local-cache>
                 <local-cache name="actionTokens">
                     <heap-memory size="-1"/>
-                    <expiration max-idle="-1" interval="300000"/>
+                    <expiration max-idle="-1" lifespan="900000000000000000" interval="300000"/>
                 </local-cache>
             </cache-container>
             <cache-container name="server" default-cache="default" modules="org.wildfly.clustering.server">

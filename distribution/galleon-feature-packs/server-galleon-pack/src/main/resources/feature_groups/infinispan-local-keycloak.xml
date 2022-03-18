@@ -18,23 +18,44 @@
             </feature>
             <feature spec="subsystem.infinispan.cache-container.local-cache">
                 <param name="local-cache" value="sessions"/>
+                <feature spec="subsystem.infinispan.cache-container.local-cache.component.expiration">
+                    <param name="lifespan" value="900000000000000000"/>
+                </feature>
             </feature>
             <feature spec="subsystem.infinispan.cache-container.local-cache">
                 <param name="local-cache" value="authenticationSessions"/>
+                <feature spec="subsystem.infinispan.cache-container.local-cache.component.expiration">
+                    <param name="lifespan" value="900000000000000000"/>
+                </feature>
             </feature>
             <feature spec="subsystem.infinispan.cache-container.local-cache">
                 <param name="local-cache" value="offlineSessions"/>
+                <feature spec="subsystem.infinispan.cache-container.local-cache.component.expiration">
+                    <param name="lifespan" value="900000000000000000"/>
+                </feature>
             </feature>
             <feature spec="subsystem.infinispan.cache-container.local-cache">
+                <feature spec="subsystem.infinispan.cache-container.local-cache.component.expiration">
+                    <param name="lifespan" value="900000000000000000"/>
+                </feature>
                 <param name="local-cache" value="clientSessions"/>
             </feature>
             <feature spec="subsystem.infinispan.cache-container.local-cache">
+                <feature spec="subsystem.infinispan.cache-container.local-cache.component.expiration">
+                    <param name="lifespan" value="900000000000000000"/>
+                </feature>
                 <param name="local-cache" value="offlineClientSessions"/>
             </feature>
             <feature spec="subsystem.infinispan.cache-container.local-cache">
+                <feature spec="subsystem.infinispan.cache-container.local-cache.component.expiration">
+                    <param name="lifespan" value="900000000000000000"/>
+                </feature>
                 <param name="local-cache" value="loginFailures"/>
             </feature>
             <feature spec="subsystem.infinispan.cache-container.local-cache">
+                <feature spec="subsystem.infinispan.cache-container.local-cache.component.expiration">
+                    <param name="lifespan" value="900000000000000000"/>
+                </feature>
                 <param name="local-cache" value="work"/>
             </feature>
             <feature spec="subsystem.infinispan.cache-container.local-cache">
@@ -60,6 +81,7 @@
                 <feature spec="subsystem.infinispan.cache-container.local-cache.component.expiration">
                     <param name="max-idle" value="-1"/>
                     <param name="interval" value="300000"/>
+                    <param name="lifespan" value="900000000000000000"/>
                 </feature>
             </feature>
         </feature>
