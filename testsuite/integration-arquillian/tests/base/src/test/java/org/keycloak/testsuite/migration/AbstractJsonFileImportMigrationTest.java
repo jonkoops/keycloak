@@ -19,9 +19,18 @@ package org.keycloak.testsuite.migration;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import org.junit.Assert;
+
 import org.junit.Before;
+import org.keycloak.exportimport.util.ImportUtils;
 import org.keycloak.representations.idm.RealmRepresentation;
+import org.keycloak.testsuite.Assert;
+import org.keycloak.testsuite.utils.io.IOUtil;
+import org.keycloak.util.JsonSerialization;
+import org.keycloak.utils.StringUtil;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 import static org.keycloak.testsuite.auth.page.AuthRealm.MASTER;
 
@@ -31,7 +40,25 @@ import static org.keycloak.testsuite.auth.page.AuthRealm.MASTER;
  */
 public abstract class AbstractJsonFileImportMigrationTest extends AbstractMigrationTest {
     protected RealmRepresentation masterRep;
-    protected String masterTestClientId;
+
+    @Override
+    public void addTestRealms(List<RealmRepresentation> testRealms) {
+        final String path = getTestRealmsJsonPath();
+
+        if (StringUtil.isBlank(path)) {
+            Assert.fail("You need to define path to the migration realm!");
+        }
+
+        try {
+            Map<String, RealmRepresentation> reps = ImportUtils.getRealmsFromStream(JsonSerialization.mapper, IOUtil.class.getResourceAsStream(path));
+            masterRep = reps.remove("master");
+            testRealms.addAll(reps.values());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected abstract String getTestRealmsJsonPath();
 
     @Before
     public void beforeMigrationTest() {

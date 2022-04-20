@@ -18,20 +18,12 @@
 
 package org.keycloak.testsuite.migration;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-
 import org.junit.Test;
-import org.keycloak.exportimport.util.ImportUtils;
 import org.keycloak.representations.idm.ClientPoliciesRepresentation;
 import org.keycloak.representations.idm.ClientProfilesRepresentation;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.testsuite.Assert;
 import org.keycloak.testsuite.arquillian.annotation.AuthServerContainerExclude;
-import org.keycloak.testsuite.util.WaitUtils;
-import org.keycloak.testsuite.utils.io.IOUtil;
-import org.keycloak.util.JsonSerialization;
 
 /**
  * This is test only for migration of client policies from Keycloak 13. As the format JSON format of client policies changed between Keycloak 13 and 14
@@ -42,16 +34,8 @@ import org.keycloak.util.JsonSerialization;
 public class JsonFileImport1301MigrationClientPoliciesTest extends AbstractJsonFileImportMigrationTest {
 
     @Override
-    public void addTestRealms(List<RealmRepresentation> testRealms) {
-        Map<String, RealmRepresentation> reps = null;
-        try {
-            reps = ImportUtils.getRealmsFromStream(JsonSerialization.mapper, IOUtil.class.getResourceAsStream("/migration-test/migration-realm-13.0.1-client-policies.json"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        for (RealmRepresentation rep : reps.values()) {
-            testRealms.add(rep);
-        }
+    protected String getTestRealmsJsonPath() {
+        return "/migration-test/migration-realm-13.0.1-client-policies.json";
     }
 
     @Test

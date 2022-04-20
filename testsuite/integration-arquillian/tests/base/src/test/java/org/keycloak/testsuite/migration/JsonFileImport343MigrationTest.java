@@ -18,17 +18,8 @@ package org.keycloak.testsuite.migration;
 
 import org.junit.Test;
 import org.keycloak.common.Profile;
-import org.keycloak.exportimport.util.ImportUtils;
-import org.keycloak.representations.idm.RealmRepresentation;
-import org.keycloak.testsuite.arquillian.annotation.AuthServerContainerExclude;
-import org.keycloak.testsuite.utils.io.IOUtil;
-import org.keycloak.util.JsonSerialization;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 import org.keycloak.testsuite.ProfileAssume;
-
+import org.keycloak.testsuite.arquillian.annotation.AuthServerContainerExclude;
 import org.keycloak.testsuite.arquillian.annotation.AuthServerContainerExclude.AuthServer;
 
 /**
@@ -41,19 +32,8 @@ import org.keycloak.testsuite.arquillian.annotation.AuthServerContainerExclude.A
 public class JsonFileImport343MigrationTest extends AbstractJsonFileImportMigrationTest {
 
     @Override
-    public void addTestRealms(List<RealmRepresentation> testRealms) {
-        Map<String, RealmRepresentation> reps = null;
-        try {
-            reps = ImportUtils.getRealmsFromStream(JsonSerialization.mapper, IOUtil.class.getResourceAsStream("/migration-test/migration-realm-3.4.3.Final.json"));
-            masterRep = reps.remove("master");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        for (RealmRepresentation rep : reps.values()) {
-            testRealms.add(rep);
-        }
-
-
+    protected String getTestRealmsJsonPath() {
+        return "/migration-test/migration-realm-3.4.3.Final.json";
     }
 
     @Test

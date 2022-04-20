@@ -60,6 +60,19 @@ public class MigrationTest extends AbstractMigrationTest {
     }
 
     @Test
+    @Migration(versionFrom = "15.")
+    public void migration15_xTest() throws Exception {
+        testMigratedData(false);
+
+        // Add this once the testMigrationTo18_x() is available for RH-SSO 7.6
+        //testMigrationTo18_x();
+
+        // Always test offline-token login during migration test
+        testOfflineTokenLogin();
+        testExtremelyLongClientAttribute(migrationRealm);
+    }
+
+    @Test
     @Migration(versionFrom = "9.")
     public void migration9_xTest() throws Exception {
         testMigratedData(false);
