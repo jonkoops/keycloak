@@ -54,9 +54,12 @@ public class ServerTestEnricherUtil {
     public static boolean addHttpsListener(OnlineManagementClient client) {
         try {
             LOG.debug("Add Undertow HTTPS listener 'https'");
-            client.execute("/subsystem=undertow/server=default-server/https-listener=https:add(ssl-context=httpsSSC, socket-binding=https)");
+            client.apply(new AddUndertowListener.HttpsBuilder("https", "default-server", "https")
+                    .securityRealm("UndertowRealm")
+                    .verifyClient(SslVerifyClient.REQUESTED)
+                    .build());
             return true;
-        } catch (Exception e) {
+        } catch (CommandFailedException e) {
             LOG.warn("Cannot add HTTPS listener 'https'");
             return false;
         }

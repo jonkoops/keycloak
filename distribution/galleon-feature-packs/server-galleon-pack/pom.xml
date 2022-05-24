@@ -66,6 +66,13 @@
 
         <dependency>
             <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-core-feature-pack-galleon-pruned</artifactId>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-core-galleon-pack</artifactId>
             <type>pom</type>
             <scope>provided</scope>
@@ -384,6 +391,10 @@
                 </property>
             </activation>
 
+            <properties>
+                <feature.parent>org.wildfly:wildfly-galleon-pack</feature.parent>
+            </properties>
+
             <dependencies>
                 <dependency>
                     <groupId>org.wildfly</groupId>
@@ -406,6 +417,10 @@
                     <name>product</name>
                 </property>
             </activation>
+
+            <properties>
+                <feature.parent>${ee.maven.groupId}:wildfly-ee-galleon-pack</feature.parent>
+            </properties>
 
             <dependencies>
                 <dependency>
@@ -452,6 +467,7 @@
                                                      transitives. Those poms ban transitives at their level -->
                                                 <exclude>org.wildfly.core:wildfly-core-feature-pack-common</exclude>
                                                 <exclude>org.wildfly.core:wildfly-core-feature-pack-ee-8-api</exclude>
+                                                <exclude>org.wildfly.core:wildfly-core-feature-pack-galleon-pruned</exclude>
                                                 <exclude>org.wildfly.core:wildfly-core-feature-pack-galleon-common</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-servlet-feature-pack-common</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-servlet-feature-pack-ee-8-api</exclude>
