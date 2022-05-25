@@ -78,3 +78,9 @@ quarkus/data/*.db
 
 # SDKMAM environment file
 .sdkmanrc
+
+# Jakarta transformed sources #
+###############################
+
+/integration/admin-client-jakarta/src/
+/.metadata/
