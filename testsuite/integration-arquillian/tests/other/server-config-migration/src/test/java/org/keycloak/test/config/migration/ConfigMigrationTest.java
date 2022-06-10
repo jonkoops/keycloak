@@ -17,9 +17,13 @@
 
 package org.keycloak.test.config.migration;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -54,6 +58,22 @@ public class ConfigMigrationTest {
     private final Logger log = Logger.getLogger(ConfigMigrationTest.class);
     private final Deque<String> nav = new LinkedList<>();
 
+    private static final Set<List<String>> defaultIgnoredPaths = new HashSet<>();
+
+    static {
+        // After upgrade of WildFly itself, the WildFly Elytron was upgraded as well and there was added property `wildfly.sasl.local-user.challenge-path`
+        // for `configurable-sasl-server-factory` and this test compares all those changes, but the property is missing.
+        // However, after ignoring the property, the migration works as expected; properly migrated.
+        if (!System.getProperty("migrated.version", "").isEmpty()) {
+            defaultIgnoredPaths.add(getModelNode("root", "result", "subsystem", "elytron",
+                    "configurable-sasl-server-factory", "configured", "properties"));
+            defaultIgnoredPaths.add(getModelNode("root", "result", "elytron", "result",
+                    "configurable-sasl-server-factory", "configured", "properties"));
+            defaultIgnoredPaths.add(getModelNode("root", "result", "[elytron]", "result",
+                    "configurable-sasl-server-factory", "configured", "properties"));
+        }
+    }
+
     @Test
     public void testStandalone() throws IOException {
         compareConfigs("master-standalone.txt", "migrated-standalone.txt");
@@ -87,18 +107,18 @@ public class ConfigMigrationTest {
         File migratedFile = new File(TARGET_DIR, migratedConfig);
         Assert.assertTrue(migratedFile.exists());
 
-        try (
-            FileInputStream masterStream = new FileInputStream(masterFile);
-            FileInputStream migratedStream = new FileInputStream(migratedFile);
+        removeWarningsFromFile(masterFile);
+        removeWarningsFromFile(migratedFile);
+
+        try (FileInputStream masterStream = new FileInputStream(masterFile);
+             FileInputStream migratedStream = new FileInputStream(migratedFile);
         ) {
             // Convert to ModelNode to test equality.
             // A textual diff might have things out of order.
             ModelNode master = ModelNode.fromStream(masterStream);
             ModelNode migrated = ModelNode.fromStream(migratedStream);
 
-            if (master.equals(migrated)) {
-                // ok
-            } else {
+            if (!master.equals(migrated)) {
                 if (Boolean.parseBoolean(System.getProperty("get.simple.full.comparison"))) {
                     assertThat(migrated, is(equalTo(master)));
                 }
@@ -107,7 +127,7 @@ public class ConfigMigrationTest {
         }
     }
 
-    private List<String> getModelNode(String... paths) {
+    private static List<String> getModelNode(String... paths) {
         return Collections.unmodifiableList(Arrays.asList(paths));
     }
 
@@ -149,7 +169,7 @@ public class ConfigMigrationTest {
     private void compareConfigsDeeply(String id, ModelNode master, ModelNode migrated, final Set<List<String>> ignoredPaths) {
         nav.add(id);
 
-        if (shouldIgnoreKey(ignoredPaths)) {
+        if (shouldIgnoreKey(ignoredPaths) || shouldIgnoreKey(defaultIgnoredPaths)) {
             return;
         }
 
@@ -251,5 +271,39 @@ public class ConfigMigrationTest {
                 .map(ModelNode::toString)
                 .map(s -> s.split("\"")[index])
                 .collect(Collectors.toList());
+    }
+
+    private void removeWarningsFromFile(File file) {
+        final String WARNING_MESSAGE = "WARNING:";
+        final File tempFile = new File(file.getAbsolutePath() + ".tmp");
+
+        try (PrintWriter pw = new PrintWriter(new FileWriter(tempFile));
+             BufferedReader br = new BufferedReader(new FileReader(file))
+        ) {
+            String line;
+
+            while ((line = br.readLine()) != null) {
+                final String trimmedLine = line.trim();
+
+                if (!trimmedLine.startsWith(WARNING_MESSAGE)) {
+                    pw.println(line);
+                    pw.flush();
+                } else if (trimmedLine.startsWith("{")) {
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        if (!file.delete()) {
+            log.warn("Cannot delete file");
+            return;
+        }
+
+        if (!tempFile.renameTo(file)) {
+            log.warn("Could not rename file");
+        }
     }
 }
