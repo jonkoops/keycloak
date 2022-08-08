@@ -81,7 +81,7 @@ import org.openqa.selenium.NoSuchElementException;
 
 /**
  * Test for OIDC RP-Initiated Logout - https://openid.net/specs/openid-connect-rpinitiated-1_0.html
- *
+ * <p>
  * This is handled on server-side by the LogoutEndpoint.logout method
  *
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -129,6 +129,7 @@ public class RPInitiatedLogoutTest extends AbstractTestRealmKeycloakTest {
 
     @Test
     public void logoutRedirect() {
+
         OAuthClient.AccessTokenResponse tokenResponse = loginUser();
         String sessionId = tokenResponse.getSessionState();
 
@@ -156,7 +157,6 @@ public class RPInitiatedLogoutTest extends AbstractTestRealmKeycloakTest {
         Assert.assertThat(false, is(isSessionActive(sessionId2)));
         assertCurrentUrlEquals(redirectUri + "&state=something");
     }
-
 
     @Test
     public void logoutRedirectWithIdTokenHintPointToDifferentSession() {
@@ -243,7 +243,7 @@ public class RPInitiatedLogoutTest extends AbstractTestRealmKeycloakTest {
             assertEquals("test-user@localhost", loginPage.getUsername());
 
             loginPage.login("test-user@localhost", "password");
-            
+
             //log out
             appPage.openAccount();
             accountManagementPage.signOut();
@@ -457,8 +457,7 @@ public class RPInitiatedLogoutTest extends AbstractTestRealmKeycloakTest {
         try {
             logoutConfirmPage.clickBackToApplicationLink();
             fail();
-        }
-        catch (NoSuchElementException ex) {
+        } catch (NoSuchElementException ex) {
             // expected
         }
 
@@ -513,8 +512,7 @@ public class RPInitiatedLogoutTest extends AbstractTestRealmKeycloakTest {
         try {
             errorPage.clickBackToApplication();
             fail();
-        }
-        catch (NoSuchElementException ex) {
+        } catch (NoSuchElementException ex) {
             // expected
         }
     }
@@ -711,8 +709,7 @@ public class RPInitiatedLogoutTest extends AbstractTestRealmKeycloakTest {
         try {
             logoutConfirmPage.clickBackToApplicationLink();
             fail();
-        }
-        catch (NoSuchElementException ex) {
+        } catch (NoSuchElementException ex) {
             // expected
         }
 
@@ -727,7 +724,7 @@ public class RPInitiatedLogoutTest extends AbstractTestRealmKeycloakTest {
         ClientRepresentation rep = clients.findByClientId(oauth.getClientId()).get(0);
         rep.setFrontchannelLogout(true);
         rep.getAttributes().put(OIDCConfigAttributes.FRONT_CHANNEL_LOGOUT_URI, oauth.APP_ROOT + "/admin/frontchannelLogout");
-        clients.get(rep.getId()).update(rep);        
+        clients.get(rep.getId()).update(rep);
         try {
             oauth.clientSessionState("client-session");
             oauth.doLogin("test-user@localhost", "password");
@@ -812,7 +809,49 @@ public class RPInitiatedLogoutTest extends AbstractTestRealmKeycloakTest {
         }
     }
 
+    @Test
+    public void logoutWithIdTokenAndDisabledClientMustWork() throws Exception {
+        OAuthClient.AccessTokenResponse tokenResponse = loginUser();
 
+
+        try (Closeable accountClientUpdater = ClientAttributeUpdater.forClient(adminClient, "test", oauth.getClientId())
+                .setEnabled(false).update()) {
+
+            String logoutUrl = oauth.getLogoutUrl().postLogoutRedirectUri(APP_REDIRECT_URI).clientId("test-app").build();
+            driver.navigate().to(logoutUrl);
+            Assert.assertThat(true, is(isSessionActive(tokenResponse.getSessionState())));
+            events.assertEmpty();
+
+            logoutConfirmPage.confirmLogout();
+            events.expectLogout(tokenResponse.getSessionState()).assertEvent();
+            Assert.assertThat(false, is(isSessionActive(tokenResponse.getSessionState())));
+        }
+
+    }
+
+    //Login and logout with account client disabled after login
+    @Test
+    public void testLogoutWhenAccountClientIsDisabled() throws IOException {
+
+        OAuthClient.AccessTokenResponse tokenResponse = loginUser();
+        String sessionId = tokenResponse.getSessionState();
+
+        try (Closeable accountClientUpdater = ClientAttributeUpdater.forClient(adminClient, "test", Constants.ACCOUNT_MANAGEMENT_CLIENT_ID)
+                .setEnabled(false)
+                .update()) {
+            String logoutUrl = oauth.getLogoutUrl().build();
+            driver.navigate().to(logoutUrl);
+
+            events.assertEmpty();
+            logoutConfirmPage.assertCurrent();
+            logoutConfirmPage.confirmLogout();
+
+            Assert.assertThat(false, is(isSessionActive(sessionId)));
+            Assert.assertThat(false, is(isSessionActive(tokenResponse.getSessionState())));
+        }
+    }
+
+    // SUPPORT METHODS
     private OAuthClient.AccessTokenResponse loginUser() {
         return loginUser(false);
     }
