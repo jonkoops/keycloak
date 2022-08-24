@@ -7,6 +7,8 @@ import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.common.util.Time;
 import org.keycloak.models.IdentityProviderMapperSyncMode;
 import org.keycloak.models.IdentityProviderSyncMode;
+import org.keycloak.models.OTPPolicy;
+import org.keycloak.models.utils.TimeBasedOTP;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.ComponentRepresentation;
 import org.keycloak.representations.idm.IdentityProviderMapperRepresentation;
@@ -471,6 +473,8 @@ public abstract class AbstractAdvancedBrokerTest extends AbstractBrokerTest {
         assertNumFederatedIdentities(realm.users().search(bc.getUserLogin()).get(0).getId(), 1);
         logoutFromRealm(getConsumerRoot(), bc.consumerRealmName());
 
+        setOtpTimeOffset(TimeBasedOTP.DEFAULT_INTERVAL_SECONDS, totp);
+
         logInWithBroker(bc);
 
         loginTotpPage.assertCurrent();
@@ -510,6 +514,8 @@ public abstract class AbstractAdvancedBrokerTest extends AbstractBrokerTest {
             assertNumFederatedIdentities(realm.users().search(bc.getUserLogin()).get(0).getId(), 1);
             logoutFromRealm(getConsumerRoot(), bc.consumerRealmName());
 
+            setOtpTimeOffset(TimeBasedOTP.DEFAULT_INTERVAL_SECONDS, totp);
+
             logInWithBroker(bc);
 
             loginTotpPage.assertCurrent();
@@ -528,6 +534,8 @@ public abstract class AbstractAdvancedBrokerTest extends AbstractBrokerTest {
             // Clear login failures
             String userId = ApiUtil.findUserByUsername(realm, bc.getUserLogin()).getId();
             realm.attackDetection().clearBruteForceForUser(userId);
+
+            setOtpTimeOffset(TimeBasedOTP.DEFAULT_INTERVAL_SECONDS, totp);
 
             loginTotpPage.login(totp.generateTOTP(totpSecret));
             waitForAccountManagementTitle();

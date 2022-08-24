@@ -17,7 +17,9 @@
 
 package org.keycloak.testsuite.admin.realm;
 
+import com.google.common.collect.Sets;
 import org.apache.commons.io.IOUtils;
+import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,6 +36,7 @@ import org.keycloak.events.log.JBossLoggingEventListenerProviderFactory;
 import org.keycloak.models.CibaConfig;
 import org.keycloak.models.Constants;
 import org.keycloak.models.OAuth2DeviceConfig;
+import org.keycloak.models.OTPPolicy;
 import org.keycloak.models.ParConfig;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
@@ -73,16 +76,24 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.keycloak.testsuite.util.ServerURLs.getAuthServerContextRoot;
@@ -191,11 +202,17 @@ public class RealmTest extends AbstractAdminTest {
                         CibaConfig.CIBA_AUTH_REQUESTED_USER_HINT).stream().forEach(i -> rep2.getAttributes().remove(i));
             }
 
-            Map<String, String> attributes = rep2.getAttributes();
-            assertTrue("Attributes expected to be present oauth2DeviceCodeLifespan, oauth2DevicePollingInterval, found: " + String.join(", ", attributes.keySet()),
-                attributes.size() == 3 && attributes.containsKey(OAuth2DeviceConfig.OAUTH2_DEVICE_CODE_LIFESPAN)
-                    && attributes.containsKey(OAuth2DeviceConfig.OAUTH2_DEVICE_POLLING_INTERVAL)
-                    && attributes.containsKey(ParConfig.PAR_REQUEST_URI_LIFESPAN));
+            Set<String> attributesKeys = rep2.getAttributes().keySet();
+
+            final Set<String> expectedAttributes = Sets.newHashSet(
+                    OAuth2DeviceConfig.OAUTH2_DEVICE_CODE_LIFESPAN,
+                    OAuth2DeviceConfig.OAUTH2_DEVICE_POLLING_INTERVAL,
+                    ParConfig.PAR_REQUEST_URI_LIFESPAN,
+                    OTPPolicy.REALM_REUSABLE_CODE_ATTRIBUTE
+            );
+
+            assertThat(attributesKeys.size(), CoreMatchers.is(expectedAttributes.size()));
+            assertThat(attributesKeys, CoreMatchers.is(expectedAttributes));
         } finally {
             adminClient.realm("attributes").remove();
         }
