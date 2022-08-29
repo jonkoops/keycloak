@@ -258,9 +258,8 @@ module.controller('ResourceServerResourceDetailCtrl', function($scope, $http, $r
         delay: 500,
         allowClear: true,
         query: function (query) {
-            var data = {results: []};
             if ('' == query.term.trim()) {
-                query.callback(data);
+                query.callback({ results: [] });
                 return;
             }
             $scope.query = {
@@ -271,17 +270,15 @@ module.controller('ResourceServerResourceDetailCtrl', function($scope, $http, $r
                 max : 20,
                 first : 0
             };
-            ResourceServerScope.query($scope.query, function(response) {
-                data.results = response;
-                query.callback(data);
-            });
+            ResourceServerScope.query($scope.query, function (response) {
+                query.callback({
+                  results: response.map(function (resource) {
+                    resource.text = resource.name;
+                    return resource;
+                  })
+                });
+              });
         },
-        formatResult: function(object, container, query) {
-            return object.name;
-        },
-        formatSelection: function(object, container, query) {
-            return object.name;
-        }
     };
 
     var $instance = this;
@@ -917,9 +914,8 @@ module.controller('ResourceServerPolicyResourceDetailCtrl', function($scope, $ro
                 allowClear: true,
                 id: function(resource){ return resource._id; },
                 query: function (query) {
-                    var data = {results: []};
                     if ('' == query.term.trim()) {
-                        query.callback(data);
+                        query.callback({ results: [] });
                         return;
                     }
                     $scope.query = {
@@ -931,13 +927,13 @@ module.controller('ResourceServerPolicyResourceDetailCtrl', function($scope, $ro
                         first : 0
                     };
                     ResourceServerResource.query($scope.query, function(response) {
-                        data.results = response;
-                        query.callback(data);
+                        query.callback({
+                            result: response.map(function (scope) {
+                                scope.text = scope.name;
+                                return scope;
+                            })
+                        });
                     });
-                },
-                formatResult: function(object, container, query) {
-                    object.text = object.name;
-                    return object.name;
                 }
             };
 
@@ -946,9 +942,8 @@ module.controller('ResourceServerPolicyResourceDetailCtrl', function($scope, $ro
                 delay: 500,
                 allowClear: true,
                 query: function (query) {
-                    var data = {results: []};
                     if ('' == query.term.trim()) {
-                        query.callback(data);
+                        query.callback({ results: [] });
                         return;
                     }
                     $scope.query = {
@@ -960,13 +955,13 @@ module.controller('ResourceServerPolicyResourceDetailCtrl', function($scope, $ro
                         first : 0
                     };
                     ResourceServerPermission.searchPolicies($scope.query, function(response) {
-                        data.results = response;
-                        query.callback(data);
+                        query.callback({
+                            result: response.map(function (policy) {
+                                policy.text = policy.name;
+                                return policy;
+                            })
+                        });
                     });
-                },
-                formatResult: function(object, container, query) {
-                    object.text = object.name;
-                    return object.name;
                 }
             };
 
@@ -1118,9 +1113,8 @@ module.controller('ResourceServerPolicyScopeDetailCtrl', function($scope, $route
                 delay: 500,
                 allowClear: true,
                 query: function (query) {
-                    var data = {results: []};
                     if ('' == query.term.trim()) {
-                        query.callback(data);
+                        query.callback({results: []});
                         return;
                     }
                     $scope.query = {
@@ -1131,14 +1125,14 @@ module.controller('ResourceServerPolicyScopeDetailCtrl', function($scope, $route
                         max : 20,
                         first : 0
                     };
-                    ResourceServerScope.query($scope.query, function(response) {
-                        data.results = response;
-                        query.callback(data);
+                    RResourceServerScope.query($scope.query, function (response) {
+                        query.callback({
+                          result: response.map(function (scope) {
+                            scope.text = scope.name;
+                            return scope;
+                          })
+                        });
                     });
-                },
-                formatResult: function(object, container, query) {
-                    object.text = object.name;
-                    return object.name;
                 }
             };
 
@@ -1148,9 +1142,8 @@ module.controller('ResourceServerPolicyScopeDetailCtrl', function($scope, $route
                 allowClear: true,
                 id: function(resource){ return resource._id; },
                 query: function (query) {
-                    var data = {results: []};
                     if ('' == query.term.trim()) {
-                        query.callback(data);
+                        query.callback({results: []});
                         return;
                     }
                     $scope.query = {
@@ -1161,14 +1154,14 @@ module.controller('ResourceServerPolicyScopeDetailCtrl', function($scope, $route
                         max : 20,
                         first : 0
                     };
-                    ResourceServerResource.query($scope.query, function(response) {
-                        data.results = response;
-                        query.callback(data);
+                    ResourceServerResource.query($scope.query, function (response) {
+                        query.callback({
+                            result: response.map(function (resource) {
+                                resource.text = resource.name;
+                                return resource;
+                            })
+                        });
                     });
-                },
-                formatResult: function(object, container, query) {
-                    object.text = object.name;
-                    return object.name;
                 }
             };
 
@@ -1177,9 +1170,8 @@ module.controller('ResourceServerPolicyScopeDetailCtrl', function($scope, $route
                 delay: 500,
                 allowClear: true,
                 query: function (query) {
-                    var data = {results: []};
                     if ('' == query.term.trim()) {
-                        query.callback(data);
+                        query.callback({ results: [] });
                         return;
                     }
                     $scope.query = {
@@ -1191,13 +1183,13 @@ module.controller('ResourceServerPolicyScopeDetailCtrl', function($scope, $route
                         first : 0
                     };
                     ResourceServerPolicy.query($scope.query, function(response) {
-                        data.results = response;
-                        query.callback(data);
+                        query.callback({
+                            result: response.map(function (resource) {
+                                resource.text = resource.name;
+                                return resource;
+                            })
+                        });
                     });
-                },
-                formatResult: function(object, container, query) {
-                    object.text = object.name;
-                    return object.name;
                 }
             };
 
@@ -1422,18 +1414,18 @@ module.controller('ResourceServerPolicyUserDetailCtrl', function($scope, $route,
                 delay: 500,
                 allowClear: true,
                 query: function (query) {
-                    var data = {results: []};
                     if ('' == query.term.trim()) {
-                        query.callback(data);
+                        query.callback({results: []});
                         return;
                     }
                     User.query({realm: $route.current.params.realm, search: query.term.trim(), max: 20}, function(response) {
-                        data.results = response;
-                        query.callback(data);
+                        query.callback({
+                            results: response.map(function (user) {
+                                user.text = user.username;
+                                return user;
+                            })
+                        });
                     });
-                },
-                formatResult: function(object, container, query) {
-                    return object.username;
                 }
             };
 
@@ -2013,9 +2005,8 @@ module.controller('ResourceServerPolicyAggregateDetailCtrl', function($scope, $r
                 delay: 500,
                 allowClear: true,
                 query: function (query) {
-                    var data = {results: []};
                     if ('' == query.term.trim()) {
-                        query.callback(data);
+                        query.callback({ results: [] });
                         return;
                     }
                     $scope.query = {
@@ -2028,12 +2019,13 @@ module.controller('ResourceServerPolicyAggregateDetailCtrl', function($scope, $r
                     };
                     ResourceServerPolicy.query($scope.query, function(response) {
                         data.results = response;
-                        query.callback(data);
+                        query.callback({
+                            results: response.map(function (policy) {
+                                policy.text = policy.name;
+                                return policy;
+                            })
+                        });
                     });
-                },
-                formatResult: function(object, container, query) {
-                    object.text = object.name;
-                    return object.name;
                 }
             };
         },
@@ -2812,19 +2804,18 @@ module.controller('PolicyEvaluateCtrl', function($scope, $http, $route, $locatio
         delay: 500,
         allowClear: true,
         query: function (query) {
-            var data = {results: []};
             if ('' == query.term.trim()) {
-                query.callback(data);
+                query.callback({ results: [] });
                 return;
             }
             User.query({realm: $route.current.params.realm, search: query.term.trim(), max: 20}, function(response) {
-                data.results = response;
-                query.callback(data);
+                query.callback({
+                    results: response.map(function (user) {
+                        user.text = user.username;
+                        return user;
+                    })
+                });
             });
-        },
-        formatResult: function(object, container, query) {
-            object.text = object.username;
-            return object.username;
         }
     };
 
@@ -2834,9 +2825,8 @@ module.controller('PolicyEvaluateCtrl', function($scope, $http, $route, $locatio
         allowClear: true,
         id: function(resource){ return resource._id; },
         query: function (query) {
-            var data = {results: []};
             if ('' == query.term.trim()) {
-                query.callback(data);
+                query.callback({ results: [] });
                 return;
             }
             $scope.query = {
@@ -2847,14 +2837,14 @@ module.controller('PolicyEvaluateCtrl', function($scope, $http, $route, $locatio
                 max : 20,
                 first : 0
             };
-            ResourceServerResource.query($scope.query, function(response) {
-                data.results = response;
-                query.callback(data);
+            ResourceServerResource.query($scope.query, function (response) {
+                query.callback({
+                    results: response.map(function (resource) {
+                        resource.text = resource.name;
+                        return resource;
+                    })
+                });
             });
-        },
-        formatResult: function(object, container, query) {
-            object.text = object.name;
-            return object.name;
         }
     };
 
@@ -2863,9 +2853,8 @@ module.controller('PolicyEvaluateCtrl', function($scope, $http, $route, $locatio
         delay: 500,
         allowClear: true,
         query: function (query) {
-            var data = {results: []};
             if ('' == query.term.trim()) {
-                query.callback(data);
+                query.callback({ results: [] });
                 return;
             }
             $scope.query = {
@@ -2877,13 +2866,13 @@ module.controller('PolicyEvaluateCtrl', function($scope, $http, $route, $locatio
                 first : 0
             };
             ResourceServerScope.query($scope.query, function(response) {
-                data.results = response;
-                query.callback(data);
+                query.callback({
+                    result: response.map(function (scope) {
+                        scope.text = scope.name;
+                        return scope;
+                    })
+                });
             });
-        },
-        formatResult: function(object, container, query) {
-            object.text = object.name;
-            return object.name;
         }
     };
 
