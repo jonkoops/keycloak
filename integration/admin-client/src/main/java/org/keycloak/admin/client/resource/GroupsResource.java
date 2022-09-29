@@ -124,4 +124,12 @@ public interface GroupsResource {
     @Path("{id}")
     GroupResource group(@PathParam("id") String id);
 
+    /**
+     * <b>UNSUPPORTED.</b> Allows for searching for groups via attribute.
+     * <p>
+     * The {@code q} parameter is not supported. Use at your own risk.
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    List<GroupRepresentation> query(@QueryParam("q") String searchQuery);
 }
