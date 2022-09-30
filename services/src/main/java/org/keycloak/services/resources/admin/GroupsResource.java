@@ -79,18 +79,19 @@ public class GroupsResource {
                                                  @QueryParam("q") String searchQuery,
                                                  @QueryParam("first") Integer firstResult,
                                                  @QueryParam("max") Integer maxResults,
-                                                 @QueryParam("briefRepresentation") @DefaultValue("true") boolean briefRepresentation) {
+                                                 @QueryParam("briefRepresentation") @DefaultValue("true") boolean briefRepresentation,
+                                                 @QueryParam("includeSubgroupsBug") @DefaultValue("true") boolean includeAllSubgroups) {
         auth.groups().requireList();
 
         if (Objects.nonNull(searchQuery)) {
             Map<String, String> attributes = SearchQueryUtils.getFields(searchQuery);
             return ModelToRepresentation.searchGroupsByAttributes(session, realm, !briefRepresentation, attributes, firstResult, maxResults);
         } else if (Objects.nonNull(search)) {
-            return ModelToRepresentation.searchForGroupByName(realm, !briefRepresentation, search.trim(), firstResult, maxResults);
+            return ModelToRepresentation.searchForGroupByName(realm, !briefRepresentation, search.trim(), firstResult, maxResults, includeAllSubgroups);
         } else if(Objects.nonNull(firstResult) && Objects.nonNull(maxResults)) {
-            return ModelToRepresentation.toGroupHierarchy(realm, !briefRepresentation, firstResult, maxResults);
+            return ModelToRepresentation.toGroupHierarchy(realm, !briefRepresentation, firstResult, maxResults, includeAllSubgroups);
         } else {
-            return ModelToRepresentation.toGroupHierarchy(realm, !briefRepresentation);
+            return ModelToRepresentation.toGroupHierarchy(realm, !briefRepresentation, includeAllSubgroups);
         }
     }
 

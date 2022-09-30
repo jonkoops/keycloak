@@ -79,6 +79,26 @@ public interface GroupsResource {
                                      @QueryParam("first") Integer first,
                                      @QueryParam("max") Integer max,
                                      @QueryParam("briefRepresentation") @DefaultValue("true") boolean briefRepresentation);
+
+    /**
+     * Get groups by pagination params.
+     * @param search max number of occurrences
+     * @param first index of the first element
+     * @param max max number of occurrences
+     * @param briefRepresentation if false, return groups with their attributes
+     * @param includeAllSubgroups if true, return groups with all their subgroups as was default until Keycloak 15.
+     *                            This parameter is deprecated and will be removed in Keycloak 16. You can achieve
+     *                            behaviour from Keycloak 16+ by setting this parameter to {@code false}.
+     * @return A list containing the slice of all groups.
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    List<GroupRepresentation> groups(@QueryParam("search") String search,
+                                     @QueryParam("first") Integer first,
+                                     @QueryParam("max") Integer max,
+                                     @QueryParam("briefRepresentation") @DefaultValue("true") boolean briefRepresentation,
+                                     @QueryParam("includeSubgroupsBug") @DefaultValue("true") boolean includeAllSubgroups);
     /**
      * Counts all groups.
      * @return A map containing key "count" with number of groups as value.

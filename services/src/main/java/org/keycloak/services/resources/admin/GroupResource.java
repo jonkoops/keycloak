@@ -84,7 +84,7 @@ public class GroupResource {
     public GroupRepresentation getGroup() {
         this.auth.groups().requireView(group);
 
-        GroupRepresentation rep = ModelToRepresentation.toGroupHierarchy(group, true);
+        GroupRepresentation rep = ModelToRepresentation.toGroupHierarchy(group, true, true);
 
         rep.setAccess(auth.groups().getAccess(group));
 
@@ -178,7 +178,7 @@ public class GroupResource {
         }
         adminEvent.resourcePath(session.getContext().getUri()).representation(rep).success();
 
-        GroupRepresentation childRep = ModelToRepresentation.toGroupHierarchy(child, true);
+        GroupRepresentation childRep = ModelToRepresentation.toGroupHierarchy(child, true, true);
         return builder.type(MediaType.APPLICATION_JSON_TYPE).entity(childRep).build();
     }
 

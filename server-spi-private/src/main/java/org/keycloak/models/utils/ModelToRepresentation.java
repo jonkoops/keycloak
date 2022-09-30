@@ -170,9 +170,9 @@ public class ModelToRepresentation {
                 .map(g -> toGroupHierarchy(g, full, attributes));
     }
 
-    public static Stream<GroupRepresentation> searchForGroupByName(RealmModel realm, boolean full, String search, Integer first, Integer max) {
+    public static Stream<GroupRepresentation> searchForGroupByName(RealmModel realm, boolean full, String search, Integer first, Integer max, boolean includeAllSubgroups) {
         return realm.searchForGroupByNameStream(search, first, max)
-                .map(g -> toGroupHierarchy(g, full, search));
+                .map(g -> toGroupHierarchy(g, full, search, includeAllSubgroups));
     }
 
     public static Stream<GroupRepresentation> searchForGroupByName(UserModel user, boolean full, String search, Integer first, Integer max) {
@@ -180,9 +180,9 @@ public class ModelToRepresentation {
                 .map(group -> toRepresentation(group, full));
     }
 
-    public static Stream<GroupRepresentation> toGroupHierarchy(RealmModel realm, boolean full, Integer first, Integer max) {
+    public static Stream<GroupRepresentation> toGroupHierarchy(RealmModel realm, boolean full, Integer first, Integer max, boolean includeAllSubgroups) {
         return realm.getTopLevelGroupsStream(first, max)
-                .map(g -> toGroupHierarchy(g, full));
+                .map(g -> toGroupHierarchy(g, full, includeAllSubgroups));
     }
 
     public static Stream<GroupRepresentation> toGroupHierarchy(UserModel user, boolean full, Integer first, Integer max) {
@@ -190,9 +190,9 @@ public class ModelToRepresentation {
                 .map(group -> toRepresentation(group, full));
     }
 
-    public static Stream<GroupRepresentation> toGroupHierarchy(RealmModel realm, boolean full) {
+    public static Stream<GroupRepresentation> toGroupHierarchy(RealmModel realm, boolean full, boolean includeAllSubgroups) {
         return realm.getTopLevelGroupsStream()
-                .map(g -> toGroupHierarchy(g, full));
+                .map(g -> toGroupHierarchy(g, full, includeAllSubgroups));
     }
 
     public static Stream<GroupRepresentation> toGroupHierarchy(UserModel user, boolean full) {
@@ -200,15 +200,18 @@ public class ModelToRepresentation {
                 .map(group -> toRepresentation(group, full));
     }
 
-    public static GroupRepresentation toGroupHierarchy(GroupModel group, boolean full) {
-        return toGroupHierarchy(group, full, (String) null);
+    public static GroupRepresentation toGroupHierarchy(GroupModel group, boolean full, boolean includeAllSubgroups) {
+        return toGroupHierarchy(group, full, (String) null, includeAllSubgroups);
     }
 
-    public static GroupRepresentation toGroupHierarchy(GroupModel group, boolean full, String search) {
+    public static GroupRepresentation toGroupHierarchy(GroupModel group, boolean full, String search, boolean includeAllSubgroups) {
         GroupRepresentation rep = toRepresentation(group, full);
-        List<GroupRepresentation> subGroups = group.getSubGroupsStream()
-                .filter(g -> groupMatchesSearchOrIsPathElement(g, search))
-                .map(subGroup -> toGroupHierarchy(subGroup, full, search)).collect(Collectors.toList());
+        List<GroupRepresentation> subGroups = includeAllSubgroups
+          ? group.getSubGroupsStream()
+              .map(subGroup -> toGroupHierarchy(subGroup, full, includeAllSubgroups)).collect(Collectors.toList())
+          : group.getSubGroupsStream()
+              .filter(g -> groupMatchesSearchOrIsPathElement(g, search))
+              .map(subGroup -> toGroupHierarchy(subGroup, full, search, includeAllSubgroups)).collect(Collectors.toList());
         rep.setSubGroups(subGroups);
         return rep;
     }
@@ -548,7 +551,7 @@ public class ModelToRepresentation {
     }
 
     public static void exportGroups(RealmModel realm, RealmRepresentation rep) {
-        rep.setGroups(toGroupHierarchy(realm, true).collect(Collectors.toList()));
+        rep.setGroups(toGroupHierarchy(realm, true, true).collect(Collectors.toList()));
     }
 
     public static void exportAuthenticationFlows(RealmModel realm, RealmRepresentation rep) {

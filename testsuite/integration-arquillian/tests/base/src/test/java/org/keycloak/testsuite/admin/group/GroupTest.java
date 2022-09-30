@@ -81,6 +81,7 @@ import static org.keycloak.testsuite.Assert.assertNames;
 import static org.keycloak.testsuite.arquillian.annotation.AuthServerContainerExclude.AuthServer.REMOTE;
 import static org.keycloak.testsuite.util.ServerURLs.getAuthServerContextRoot;
 
+
 import org.keycloak.testsuite.arquillian.annotation.UncaughtServerErrorExpected;
 import org.keycloak.testsuite.auth.page.AuthRealm;
 import org.keycloak.testsuite.runonserver.RunOnServerException;
@@ -918,7 +919,7 @@ public class GroupTest extends AbstractGroupTest {
 
         try {
             // we search for "test1234" and expect only /g1/g1.2-test1234, /g2-test1234 and /g3/g3.1-test1234 as a result
-            List<GroupRepresentation> result = realm.groups().groups(needle, 0, 100);
+            List<GroupRepresentation> result = realm.groups().groups(needle, 0, 100, true, false);
 
             assertEquals(3, result.size());
             assertEquals("g1", result.get(0).getName());
@@ -928,6 +929,73 @@ public class GroupTest extends AbstractGroupTest {
             assertEquals("g3", result.get(2).getName());
             assertEquals(1, result.get(2).getSubGroups().size());
             assertEquals("g3.1-" + needle, result.get(2).getSubGroups().get(0).getName());
+        } finally {
+            if (g1.getId() != null) {
+                realm.groups().group(g1.getId()).remove();
+            }
+
+            if (g2.getId() != null) {
+                realm.groups().group(g2.getId()).remove();
+            }
+
+            if (g3.getId() != null) {
+                realm.groups().group(g3.getId()).remove();
+            }
+        }
+    }
+
+    @Test
+    public void searchForGroupsShouldReturnSubgroups() {
+
+        /*
+         * /g1/g1.1-gugu
+         * /g1/g1.2-test1234
+         * /g2-test1234
+         * /g3/g3.1-test1234/g3.1.1
+         */
+        String needle = "test1234";
+        GroupRepresentation g1 = GroupBuilder.create().name("g1").build();
+        GroupRepresentation g1_1 = GroupBuilder.create().name("g1.1-bubu").build();
+        GroupRepresentation g1_2 = GroupBuilder.create().name("g1.2-" + needle).build();
+        GroupRepresentation g2 = GroupBuilder.create().name("g2-" + needle).build();
+        GroupRepresentation g3 = GroupBuilder.create().name("g3").build();
+        GroupRepresentation g3_1 = GroupBuilder.create().name("g3.1-" + needle).build();
+        GroupRepresentation g3_1_1 = GroupBuilder.create().name("g3.1.1").build();
+
+        String realmName = AuthRealm.TEST;
+        RealmResource realm = adminClient.realms().realm(realmName);
+
+        createGroup(realm, g1);
+        createGroup(realm, g2);
+        createGroup(realm, g3);
+        addSubGroup(realm, g1, g1_1);
+        addSubGroup(realm, g1, g1_2);
+        addSubGroup(realm, g3, g3_1);
+        addSubGroup(realm, g3_1, g3_1_1);
+
+        try {
+            /* we search for "test1234" and expect 
+               /g1/g1.1-bubu,
+               /g1/g1.2-test1234,
+
+               /g2-test1234,
+
+               /g3/g3.1-test1234,
+               /g3/g3.1-test1234/g3.1.1
+               as a result
+             */
+            List<GroupRepresentation> result = realm.groups().groups(needle, 0, 100, true);
+
+            assertEquals(3, result.size());
+            assertEquals("g1", result.get(0).getName());
+            assertEquals(2, result.get(0).getSubGroups().size());
+            assertEquals("g1.2-" + needle, result.get(0).getSubGroups().get(0).getName());
+            assertEquals("g2-" + needle, result.get(1).getName());
+            assertEquals("g3", result.get(2).getName());
+            assertEquals(1, result.get(2).getSubGroups().size());
+            assertEquals("g3.1-" + needle, result.get(2).getSubGroups().get(0).getName());
+            assertEquals(1, result.get(2).getSubGroups().get(0).getSubGroups().size());
+            assertEquals("g3.1.1", result.get(2).getSubGroups().get(0).getSubGroups().get(0).getName());
         } finally {
             if (g1.getId() != null) {
                 realm.groups().group(g1.getId()).remove();

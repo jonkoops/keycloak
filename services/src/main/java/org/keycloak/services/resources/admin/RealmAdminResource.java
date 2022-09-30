@@ -1089,7 +1089,7 @@ public class RealmAdminResource {
 
         }
         auth.groups().requireView(found);
-        return ModelToRepresentation.toGroupHierarchy(found, true);
+        return ModelToRepresentation.toGroupHierarchy(found, true, true);
     }
 
     /**
