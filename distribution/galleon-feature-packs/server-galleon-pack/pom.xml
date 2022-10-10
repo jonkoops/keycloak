@@ -27,7 +27,7 @@
     <parent>
         <groupId>org.keycloak</groupId>
         <artifactId>galleon-feature-packs-parent</artifactId>
-        <version>18.0.3</version>
+        <version>999-SNAPSHOT</version>
     </parent>
 
     <groupId>org.keycloak</groupId>
