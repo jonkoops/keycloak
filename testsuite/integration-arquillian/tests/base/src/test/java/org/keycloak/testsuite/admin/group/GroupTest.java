@@ -985,11 +985,13 @@ public class GroupTest extends AbstractGroupTest {
                as a result
              */
             List<GroupRepresentation> result = realm.groups().groups(needle, 0, 100, true);
-
+            // ensure stable sorting to make tests pass
+            result = result.stream().sorted(Comparator.comparing(GroupRepresentation::getName)).collect(Collectors.toList());
             assertEquals(3, result.size());
             assertEquals("g1", result.get(0).getName());
             assertEquals(2, result.get(0).getSubGroups().size());
-            assertEquals("g1.2-" + needle, result.get(0).getSubGroups().get(0).getName());
+            assertEquals("g1.1-bubu", result.get(0).getSubGroups().stream().sorted(Comparator.comparing(GroupRepresentation::getName)).collect(Collectors.toList()).get(0).getName());
+            assertEquals("g1.2-" + needle, result.get(0).getSubGroups().stream().sorted(Comparator.comparing(GroupRepresentation::getName)).collect(Collectors.toList()).get(1).getName());
             assertEquals("g2-" + needle, result.get(1).getName());
             assertEquals("g3", result.get(2).getName());
             assertEquals(1, result.get(2).getSubGroups().size());
