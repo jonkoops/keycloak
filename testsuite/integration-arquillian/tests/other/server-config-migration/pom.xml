@@ -61,12 +61,6 @@
             <artifactId>jboss-dmr</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.keycloak</groupId>
-            <artifactId>keycloak-server-dist</artifactId>
-            <type>zip</type>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>
