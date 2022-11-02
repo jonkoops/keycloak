@@ -34,7 +34,7 @@
         
         <cache.server.infinispan.groupId>org.infinispan.server</cache.server.infinispan.groupId>
         <cache.server.infinispan.artifactId>infinispan-server</cache.server.infinispan.artifactId>
-        <cache.server.infinispan.version>${infinispan.version}</cache.server.infinispan.version>
+        <cache.server.infinispan.version>13.0.12.Final</cache.server.infinispan.version>
         <cache.server.infinispan.unpacked.folder.name>${cache.server.infinispan.artifactId}-${cache.server.infinispan.version}</cache.server.infinispan.unpacked.folder.name>
     </properties>
 

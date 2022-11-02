@@ -40,6 +40,19 @@
         <cache.server.infinispan.config.dir>${cache.server.infinispan.home}/server/conf</cache.server.infinispan.config.dir>
         
         <cache.server.cache-auth-xsl>cache-authentication-disabled.xsl</cache.server.cache-auth-xsl>
+
+        <!-- 
+          NOTE: Several cross-dc tests depend on ISPN/DG cache metrics.
+                
+                Since ISPN 13 / DG 8.3 cache metrics are disabled by default for performance reasons and
+                it is necessary to enable them explicitly. This configuration will be applied by setting 
+                the following property to `true`.
+          
+                When running the test with ISPN < 13 or DG < 8.3 it is necessary to set 
+                the following property to `false` otherwise the applied configuration is not valid for these versions.
+        -->
+        <cache.server.infinispan.accurate-metrics>true</cache.server.infinispan.accurate-metrics>
+        
     </properties>
 
     <profiles>
@@ -110,6 +123,10 @@
                                                 <parameter>
                                                     <name>remote.site</name>
                                                     <value>dc-1</value>
+                                                </parameter>
+                                                <parameter>
+                                                    <name>accurate.metrics</name>
+                                                    <value>${cache.server.infinispan.accurate-metrics}</value>
                                                 </parameter>
                                                 <parameter>
                                                     <name>transactions.enabled</name>

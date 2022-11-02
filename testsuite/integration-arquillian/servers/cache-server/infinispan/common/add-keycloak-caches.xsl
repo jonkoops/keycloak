@@ -25,6 +25,7 @@
 
     <xsl:param name="local.site" />
     <xsl:param name="remote.site" />
+    <xsl:param name="accurate.metrics" />
     <xsl:param name="transactions.enabled" />
 
     <!-- Configuration of infinispan caches -->
@@ -34,6 +35,10 @@
 
             <jmx enabled="true" />
             
+            <xsl:if test="$accurate.metrics='true'">
+                <metrics accurate-size="true"/>
+            </xsl:if>
+
             <!--<replicated-cache-configuration name="sessions-cfg" mode="SYNC" start="EAGER" batching="false">-->
             <replicated-cache-configuration name="sessions-cfg" mode="SYNC" start="EAGER" statistics="true" >
                 <xsl:if test="$transactions.enabled='true'">

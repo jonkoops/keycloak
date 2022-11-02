@@ -34,7 +34,7 @@
         
         <cache.server.infinispan.groupId>com.redhat</cache.server.infinispan.groupId>
         <cache.server.infinispan.artifactId>datagrid</cache.server.infinispan.artifactId>
-        <cache.server.infinispan.version>8.1.0</cache.server.infinispan.version>
+        <cache.server.infinispan.version>8.3.1</cache.server.infinispan.version>
         <cache.server.infinispan.unpacked.folder.name>redhat-datagrid-${cache.server.infinispan.version}-server</cache.server.infinispan.unpacked.folder.name>
     </properties>
 
