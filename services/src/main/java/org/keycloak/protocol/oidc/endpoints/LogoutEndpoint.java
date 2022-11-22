@@ -313,6 +313,8 @@ public class LogoutEndpoint {
                 session.getProvider(LoginFormsProvider.class).setAttribute(Constants.SKIP_LINK, true);
             }
 
+            event.error(Errors.SESSION_EXPIRED);
+
             return ErrorPage.error(session, logoutSession, Response.Status.BAD_REQUEST, Messages.FAILED_LOGOUT);
         }
 

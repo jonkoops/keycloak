@@ -187,7 +187,7 @@ public class RPInitiatedLogoutTest extends AbstractTestRealmKeycloakTest {
         driver.navigate().to(logoutUrl);
         logoutConfirmPage.assertCurrent();
         logoutConfirmPage.confirmLogout();
-        events.expectLogout(sessionId2).detail(Details.REDIRECT_URI, redirectUri).assertEvent();
+        events.expectLogoutError(Errors.SESSION_EXPIRED);
         Assert.assertThat(false, is(isSessionActive(sessionId2)));
         assertCurrentUrlEquals(redirectUri + "&state=something");
     }
@@ -210,7 +210,7 @@ public class RPInitiatedLogoutTest extends AbstractTestRealmKeycloakTest {
 
             // should not throw an internal server error. But no logout event is sent as nothing was logged-out
             appPage.assertCurrent();
-            events.assertEmpty();
+            events.expectLogoutError(Errors.SESSION_EXPIRED);
             Assert.assertThat(false, is(isSessionActive(tokenResponse.getSessionState())));
 
             // check if the back channel logout succeeded
@@ -264,10 +264,10 @@ public class RPInitiatedLogoutTest extends AbstractTestRealmKeycloakTest {
         adminClient.realm("test").logoutAll();
         Assert.assertThat(false, is(isSessionActive(sessionId)));
 
-        // Try logout even if user already logged-out by admin. Should redirect back to the application, but no logout-event should be triggered
+        // Try logout even if user already logged-out by admin. Should redirect back to the application
         String logoutUrl = oauth.getLogoutUrl().postLogoutRedirectUri(APP_REDIRECT_URI).idTokenHint(idTokenString).build();
         driver.navigate().to(logoutUrl);
-        events.assertEmpty();
+        events.expectLogoutError(Errors.SESSION_EXPIRED);
         assertCurrentUrlEquals(APP_REDIRECT_URI);
 
         // Login again in the browser. Ensure to use newest idTokenHint after logout
@@ -327,7 +327,7 @@ public class RPInitiatedLogoutTest extends AbstractTestRealmKeycloakTest {
             assertThat(response, Matchers.statusCodeIsHC(Response.Status.FOUND));
             assertThat(response.getFirstHeader(HttpHeaders.LOCATION).getValue(), is(APP_REDIRECT_URI));
         }
-        events.assertEmpty();
+        events.expectLogoutError(Errors.SESSION_EXPIRED);
 
         Assert.assertThat(false, is(isSessionActive(tokenResponse.getSessionState())));
     }
@@ -350,7 +350,7 @@ public class RPInitiatedLogoutTest extends AbstractTestRealmKeycloakTest {
             assertThat(response, Matchers.statusCodeIsHC(Response.Status.FOUND));
             assertThat(response.getFirstHeader(HttpHeaders.LOCATION).getValue(), is(APP_REDIRECT_URI));
         }
-        events.assertEmpty();
+        events.expectLogoutError(Errors.SESSION_EXPIRED);
 
         Assert.assertThat(false, is(isSessionActive(tokenResponse.getSessionState())));
     }
