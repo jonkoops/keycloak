@@ -24,6 +24,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.keycloak.authentication.requiredactions.WebAuthnRegisterFactory;
 import org.keycloak.common.Profile;
 import org.keycloak.common.util.KeycloakUriBuilder;
 import org.keycloak.events.Details;
@@ -74,6 +75,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
@@ -1029,5 +1031,32 @@ public class RequiredActionEmailVerificationTest extends AbstractTestRealmKeyclo
         driver.navigate().to(verificationUrl.trim());
         errorPage.assertCurrent();
         assertEquals("The link you clicked is an old stale link and is no longer valid. Maybe you have already verified your email.", errorPage.getError());
+    }
+
+    @Test
+    public void actionTokenWithInvalidRequiredActions() throws IOException {
+        // Send email with required action
+        testRealm().users().get(testUserId).executeActionsEmail(Collections.singletonList(WebAuthnRegisterFactory.PROVIDER_ID));
+
+        Assert.assertEquals(1, greenMail.getReceivedMessages().length);
+        MimeMessage message = greenMail.getLastReceivedMessage();
+
+        MailUtils.EmailBody body = MailUtils.getBody(message);
+        assertThat(body, notNullValue());
+
+        final String link = MailUtils.getLink(body.getText());
+        assertThat(link, notNullValue());
+
+        // Disable feature and the required action MAP_STORAGE provider is not present
+        testingClient.disableFeature(Profile.Feature.WEB_AUTHN);
+
+        driver.navigate().to(link);
+
+        errorPage.assertCurrent();
+
+        // Required action included in the action token is not valid anymore, because we don't know the provider for it
+        assertThat(errorPage.getError(), is("Required actions included in the link are not valid"));
+
+        testingClient.enableFeature(Profile.Feature.WEB_AUTHN);
     }
 }
