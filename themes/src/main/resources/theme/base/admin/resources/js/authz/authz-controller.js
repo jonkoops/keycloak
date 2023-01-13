@@ -956,7 +956,7 @@ module.controller('ResourceServerPolicyResourceDetailCtrl', function($scope, $ro
                     };
                     ResourceServerPermission.searchPolicies($scope.query, function(response) {
                         query.callback({
-                            result: response.map(function (policy) {
+                            results: response.map(function (policy) {
                                 policy.text = policy.name;
                                 return policy;
                             })
@@ -1125,7 +1125,7 @@ module.controller('ResourceServerPolicyScopeDetailCtrl', function($scope, $route
                         max : 20,
                         first : 0
                     };
-                    RResourceServerScope.query($scope.query, function (response) {
+                    ResourceServerScope.query($scope.query, function (response) {
                         query.callback({
                           result: response.map(function (scope) {
                             scope.text = scope.name;
