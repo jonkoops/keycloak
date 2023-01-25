@@ -39,6 +39,7 @@ public class OAuth2Code {
     private static final String REDIRECT_URI_PARAM_NOTE = "redirectUri";
     private static final String CODE_CHALLENGE_NOTE = "code_challenge";
     private static final String CODE_CHALLENGE_METHOD_NOTE = "code_challenge_method";
+    private static final String USER_SESSION_ID_NOTE = "user_session_id";
 
     private final UUID id;
 
@@ -53,10 +54,10 @@ public class OAuth2Code {
     private final String codeChallenge;
 
     private final String codeChallengeMethod;
-
+    private final String userSessionId;
 
     public OAuth2Code(UUID id, int expiration, String nonce, String scope, String redirectUriParam,
-                      String codeChallenge, String codeChallengeMethod) {
+                      String codeChallenge, String codeChallengeMethod, String userSessionId) {
         this.id = id;
         this.expiration = expiration;
         this.nonce = nonce;
@@ -64,6 +65,7 @@ public class OAuth2Code {
         this.redirectUriParam = redirectUriParam;
         this.codeChallenge = codeChallenge;
         this.codeChallengeMethod = codeChallengeMethod;
+        this.userSessionId = userSessionId;
     }
 
 
@@ -75,6 +77,7 @@ public class OAuth2Code {
         redirectUriParam = data.get(REDIRECT_URI_PARAM_NOTE);
         codeChallenge = data.get(CODE_CHALLENGE_NOTE);
         codeChallengeMethod = data.get(CODE_CHALLENGE_METHOD_NOTE);
+        userSessionId = data.get(USER_SESSION_ID_NOTE);
     }
 
 
@@ -93,6 +96,7 @@ public class OAuth2Code {
         result.put(REDIRECT_URI_PARAM_NOTE, redirectUriParam);
         result.put(CODE_CHALLENGE_NOTE, codeChallenge);
         result.put(CODE_CHALLENGE_METHOD_NOTE, codeChallengeMethod);
+        result.put(USER_SESSION_ID_NOTE, userSessionId);
 
         return result;
     }
@@ -124,5 +128,9 @@ public class OAuth2Code {
 
     public String getCodeChallengeMethod() {
         return codeChallengeMethod;
+    }
+
+    public String getUserSessionId() {
+        return userSessionId;
     }
 }
