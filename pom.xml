@@ -210,7 +210,7 @@
         <org.jboss.galleon.version>4.2.8.Final</org.jboss.galleon.version>
 
         <!-- Override of SnakeYAML to fix multiple CVEs -->
-        <org.yaml.snakeyaml.version>1.31</org.yaml.snakeyaml.version>
+        <org.yaml.snakeyaml.version>1.33</org.yaml.snakeyaml.version>
 
         <!-- Galleon -->
         <galleon.fork.embedded>true</galleon.fork.embedded>
