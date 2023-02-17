@@ -125,7 +125,7 @@
         <google.guava.version>30.1-jre</google.guava.version>
 
         <!-- Openshift -->
-        <version.com.openshift.openshift-restclient-java>8.0.0.Final</version.com.openshift.openshift-restclient-java>
+        <version.com.openshift.openshift-restclient-java>9.0.5.Final</version.com.openshift.openshift-restclient-java>
 
         <!-- Others -->
         <commons-lang.version>2.6</commons-lang.version>
@@ -1972,8 +1972,8 @@
                 <ee.maven.groupId>org.wildfly</ee.maven.groupId>
                 <ee.maven.version>${wildfly.version}</ee.maven.version>
                 <product.filename.version>${project.version}</product.filename.version>
-                <version.com.squareup.okhttp3.okhttp>3.9.0</version.com.squareup.okhttp3.okhttp>
-                <version.com.squareup.okio.okio>1.13.0</version.com.squareup.okio.okio>
+                <version.com.squareup.okhttp3.okhttp>4.10.0</version.com.squareup.okhttp3.okhttp>
+                <version.com.squareup.okio.okio>3.0.0</version.com.squareup.okio.okio>
             </properties>
         </profile>
 
@@ -2026,8 +2026,8 @@
                 <server.output.dir.prefix>${product.name}</server.output.dir.prefix>
                 <!-- Version suffix that is appended to directories. Default is the maven GAV version but this can be edited to use a short form version -->
                 <server.output.dir.version>${product.filename.version}</server.output.dir.version>
-                <version.com.squareup.okhttp3.okhttp>3.9.0.redhat-3</version.com.squareup.okhttp3.okhttp>
-                <version.com.squareup.okio.okio>1.13.0.redhat-3</version.com.squareup.okio.okio>
+                <version.com.squareup.okhttp3.okhttp>4.10.0.redhat-00002</version.com.squareup.okhttp3.okhttp>
+                <version.com.squareup.okio.okio>3.0.0.redhat-00001</version.com.squareup.okio.okio>
             </properties>
             <build>
                 <plugins>
