@@ -617,8 +617,11 @@ public class JpaUserProvider implements UserProvider.Streams, UserCredentialStor
         List<Predicate> predicates = new ArrayList<>();
 
         predicates.add(builder.equal(root.get("realmId"), realm.getId()));
-        predicates.add(builder.or(getSearchOptionPredicateArray(search, builder, root)));
-
+        
+        for (String stringToSearch : search.trim().split("\\s+")) {
+            predicates.add(builder.or(getSearchOptionPredicateArray(stringToSearch, builder, root)));
+        }
+        
         queryBuilder.where(predicates.toArray(new Predicate[0]));
 
         return em.createQuery(queryBuilder).getSingleResult().intValue();
@@ -641,7 +644,11 @@ public class JpaUserProvider implements UserProvider.Streams, UserCredentialStor
         List<Predicate> predicates = new ArrayList<>();
 
         predicates.add(builder.equal(userJoin.get("realmId"), realm.getId()));
-        predicates.add(builder.or(getSearchOptionPredicateArray(search, builder, userJoin)));
+        
+        for (String stringToSearch : search.trim().split("\\s+")) {
+            predicates.add(builder.or(getSearchOptionPredicateArray(stringToSearch, builder, userJoin)));
+        }
+        
         predicates.add(groupMembership.get("groupId").in(groupIds));
 
         queryBuilder.where(predicates.toArray(new Predicate[0]));
