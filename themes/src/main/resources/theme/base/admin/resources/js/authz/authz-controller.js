@@ -253,10 +253,16 @@ module.controller('ResourceServerResourceDetailCtrl', function($scope, $http, $r
     $scope.realm = realm;
     $scope.client = client;
 
+    function formatToName(item) {
+        return item.displayName || item.name;
+    }
+
     $scope.scopesUiSelect = {
         minimumInputLength: 1,
         delay: 500,
         allowClear: true,
+        formatSelection: formatToName,
+        formatResult: formatToName,
         query: function (query) {
             if ('' == query.term.trim()) {
                 query.callback({ results: [] });
@@ -272,10 +278,7 @@ module.controller('ResourceServerResourceDetailCtrl', function($scope, $http, $r
             };
             ResourceServerScope.query($scope.query, function (response) {
                 query.callback({
-                  results: response.map(function (resource) {
-                    resource.text = resource.name;
-                    return resource;
-                  })
+                  results: response
                 });
               });
         },
