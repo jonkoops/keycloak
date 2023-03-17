@@ -931,7 +931,7 @@ module.controller('ResourceServerPolicyResourceDetailCtrl', function($scope, $ro
                     };
                     ResourceServerResource.query($scope.query, function(response) {
                         query.callback({
-                            result: response.map(function (scope) {
+                            results: response.map(function (scope) {
                                 scope.text = scope.name;
                                 return scope;
                             })
@@ -1130,7 +1130,7 @@ module.controller('ResourceServerPolicyScopeDetailCtrl', function($scope, $route
                     };
                     ResourceServerScope.query($scope.query, function (response) {
                         query.callback({
-                          result: response.map(function (scope) {
+                          results: response.map(function (scope) {
                             scope.text = scope.name;
                             return scope;
                           })
@@ -1159,7 +1159,7 @@ module.controller('ResourceServerPolicyScopeDetailCtrl', function($scope, $route
                     };
                     ResourceServerResource.query($scope.query, function (response) {
                         query.callback({
-                            result: response.map(function (resource) {
+                            results: response.map(function (resource) {
                                 resource.text = resource.name;
                                 return resource;
                             })
@@ -1187,7 +1187,7 @@ module.controller('ResourceServerPolicyScopeDetailCtrl', function($scope, $route
                     };
                     ResourceServerPolicy.query($scope.query, function(response) {
                         query.callback({
-                            result: response.map(function (resource) {
+                            results: response.map(function (resource) {
                                 resource.text = resource.name;
                                 return resource;
                             })
@@ -2870,7 +2870,7 @@ module.controller('PolicyEvaluateCtrl', function($scope, $http, $route, $locatio
             };
             ResourceServerScope.query($scope.query, function(response) {
                 query.callback({
-                    result: response.map(function (scope) {
+                    results: response.map(function (scope) {
                         scope.text = scope.name;
                         return scope;
                     })
