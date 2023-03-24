@@ -7,6 +7,9 @@ export default defineConfig({
   base: "",
   server: {
     port: 8080,
+    hmr: {
+      overlay: false,
+    },
   },
   build: {
     sourcemap: true,
