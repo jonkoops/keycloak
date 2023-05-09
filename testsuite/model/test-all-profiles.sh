@@ -11,7 +11,9 @@ mvn -version
 
 EXIT_CODE=0
 mvn clean
-for I in `perl -ne 'print "$1\n" if (m,<id>([^<]+)</id>,)' pom.xml`; do
+# skip hot-rod profile
+PROFILES=`perl -ne 'print "$1\n" if (m,<id>([^<]+)</id>,  && $1 ne "hot-rod")' pom.xml`
+for I in $PROFILES; do
     echo "========"
     echo "======== Start of Profile $I"
     echo "========"
@@ -27,7 +29,7 @@ done
 ## If the jacoco file is present, generate reports in each of the model projects
 [ -f target/jacoco.exec ] && mvn -f ../../model org.jacoco:jacoco-maven-plugin:0.8.7:report -Djacoco.dataFile="$(readlink -f target/jacoco.exec)"
 
-for I in `perl -ne 'print "$1\n" if (m,<id>([^<]+)</id>,)' pom.xml`; do
+for I in $PROFILES; do
     grep -A 1 --no-filename '<<<' "target/surefire-reports-$I"/*.txt | perl -pe "print '::error::| $I | ';"
 done
 
