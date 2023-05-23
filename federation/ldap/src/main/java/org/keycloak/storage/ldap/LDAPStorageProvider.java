@@ -435,7 +435,7 @@ public class LDAPStorageProvider implements UserStorageProvider,
                 LDAPQueryConditionsBuilder conditionsBuilder = new LDAPQueryConditionsBuilder();
 
                 // Mapper should replace "username" in parameter name with correct LDAP mapped attribute
-                Condition usernameCondition = conditionsBuilder.equal(UserModel.USERNAME, attributes.get(UserModel.USERNAME), EscapeStrategy.NON_ASCII_CHARS_ONLY);
+                Condition usernameCondition = conditionsBuilder.equal(UserModel.USERNAME, attributes.get(UserModel.USERNAME), EscapeStrategy.DEFAULT_EXCEPT_ASTERISK);
                 ldapQuery.addWhereCondition(usernameCondition);
 
                 List<LDAPObject> ldapObjects = ldapQuery.getResultList();
@@ -448,7 +448,7 @@ public class LDAPStorageProvider implements UserStorageProvider,
                 LDAPQueryConditionsBuilder conditionsBuilder = new LDAPQueryConditionsBuilder();
 
                 // Mapper should replace "email" in parameter name with correct LDAP mapped attribute
-                Condition emailCondition = conditionsBuilder.equal(UserModel.EMAIL, attributes.get(UserModel.EMAIL), EscapeStrategy.NON_ASCII_CHARS_ONLY);
+                Condition emailCondition = conditionsBuilder.equal(UserModel.EMAIL, attributes.get(UserModel.EMAIL), EscapeStrategy.DEFAULT_EXCEPT_ASTERISK);
                 ldapQuery.addWhereCondition(emailCondition);
 
                 List<LDAPObject> ldapObjects = ldapQuery.getResultList();
@@ -462,10 +462,10 @@ public class LDAPStorageProvider implements UserStorageProvider,
 
                 // Mapper should replace parameter with correct LDAP mapped attributes
                 if (attributes.containsKey(UserModel.FIRST_NAME)) {
-                    ldapQuery.addWhereCondition(conditionsBuilder.equal(UserModel.FIRST_NAME, attributes.get(UserModel.FIRST_NAME), EscapeStrategy.NON_ASCII_CHARS_ONLY));
+                    ldapQuery.addWhereCondition(conditionsBuilder.equal(UserModel.FIRST_NAME, attributes.get(UserModel.FIRST_NAME), EscapeStrategy.DEFAULT_EXCEPT_ASTERISK));
                 }
                 if (attributes.containsKey(UserModel.LAST_NAME)) {
-                    ldapQuery.addWhereCondition(conditionsBuilder.equal(UserModel.LAST_NAME, attributes.get(UserModel.LAST_NAME), EscapeStrategy.NON_ASCII_CHARS_ONLY));
+                    ldapQuery.addWhereCondition(conditionsBuilder.equal(UserModel.LAST_NAME, attributes.get(UserModel.LAST_NAME), EscapeStrategy.DEFAULT_EXCEPT_ASTERISK));
                 }
 
                 List<LDAPObject> ldapObjects = ldapQuery.getResultList();
