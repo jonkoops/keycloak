@@ -307,6 +307,9 @@ public class UserCacheSession implements UserCache.Streams {
 
         if (!storageId.isLocal()) {
             ComponentModel component = realm.getComponent(storageId.getProviderId());
+            if (component == null) {
+                return null;
+            }
             CacheableStorageProviderModel model = new CacheableStorageProviderModel(component);
 
             // although we do set a timeout, Infinispan has no guarantees when the user will be evicted
