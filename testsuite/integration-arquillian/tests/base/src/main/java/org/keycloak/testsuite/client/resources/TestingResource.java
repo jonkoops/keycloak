@@ -388,4 +388,31 @@ public interface TestingResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/display-error-message")
     Response displayErrorMessage(@QueryParam("message") String message);
+
+    /**
+     * @param providerClass Full name of class such as for example "org.keycloak.authentication.Authenticator"
+     * @param providerId providerId referenced in particular provider factory. Can be null (in this case we're returning default provider for particular providerClass)
+     * @return fullname of provider implementation class
+     */
+    @GET
+    @Path("/get-provider-implementation-class")
+    @Produces(MediaType.APPLICATION_JSON)
+    String getProviderClassName(@QueryParam("providerClass") String providerClass, @QueryParam("providerId") String providerId);
+
+    /**
+     * Temporarily disables truststore SPI from the file. Useful for example to test some error scenarios, which require truststore SPI to be unset (or set incorrectly)
+     */
+    @GET
+    @Path("/disable-truststore-spi")
+    @NoCache
+    void disableTruststoreSpi();
+
+    /**
+     * Re-enable truststore SPI after it was temporarily disabled by {@link #disableTruststoreSpi()}
+     */
+    @GET
+    @Path("/reenable-truststore-spi")
+    @NoCache
+    void reenableTruststoreSpi();
+
 }
