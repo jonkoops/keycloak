@@ -26,7 +26,6 @@ import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.models.AuthenticatedClientSessionModel;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientScopeModel;
 import org.keycloak.models.ClientSessionContext;
 import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.KeycloakSession;
@@ -60,7 +59,6 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 import java.net.URI;
-import java.util.stream.Stream;
 
 /**
  * @author <a href="mailto:h2-wada@nri.co.jp">Hiroyuki Wada</a>
@@ -189,6 +187,12 @@ public class DeviceGrantType {
             event.error(Errors.INVALID_OAUTH2_DEVICE_CODE);
             throw new CorsErrorResponseException(cors, OAuthErrorException.INVALID_GRANT, "Device code not valid",
                 Response.Status.BAD_REQUEST);
+        }
+
+        if (!client.getClientId().equals(deviceCodeModel.getClientId())) {
+            event.error(Errors.INVALID_OAUTH2_DEVICE_CODE);
+            throw new CorsErrorResponseException(cors, OAuthErrorException.INVALID_GRANT, "unauthorized client",
+                    Response.Status.BAD_REQUEST);
         }
 
         if (deviceCodeModel.isExpired()) {
