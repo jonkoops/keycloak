@@ -1639,18 +1639,24 @@ public class RefreshTokenTest extends AbstractKeycloakTest {
                     .update()
                 );
 
-        oauth.doLogin("test-user@localhost", "password");
-        String code = oauth.getCurrentQuery().get(OAuth2Constants.CODE);
-        OAuthClient.AccessTokenResponse response = oauth.doAccessTokenRequest(code, "password");
-        assertEquals(200, response.getStatusCode());
-        assertExpiration(response.getExpiresIn(), 65);
+        getTestingClient().testing().setTestingInfinispanTimeService();
+        try {
+            oauth.doLogin("test-user@localhost", "password");
+            String code = oauth.getCurrentQuery().get(OAuth2Constants.CODE);
+            OAuthClient.AccessTokenResponse response = oauth.doAccessTokenRequest(code, "password");
+            assertEquals(200, response.getStatusCode());
+            assertExpiration(response.getExpiresIn(), 65);
 
-        setTimeOffset(70);
+            setTimeOffset(70);
 
-        oauth.openLoginForm();
-        code = oauth.getCurrentQuery().get(OAuth2Constants.CODE);
-        OAuthClient.AccessTokenResponse response2 = oauth.doAccessTokenRequest(code, "password");
-        assertExpiration(response2.getExpiresIn(), 65);
+            oauth.openLoginForm();
+            code = oauth.getCurrentQuery().get(OAuth2Constants.CODE);
+            OAuthClient.AccessTokenResponse response2 = oauth.doAccessTokenRequest(code, "password");
+            assertExpiration(response2.getExpiresIn(), 65);
+        } finally {
+            getTestingClient().testing().revertTestingInfinispanTimeService();
+            resetTimeOffset();
+        }
     }
 
     @Test
