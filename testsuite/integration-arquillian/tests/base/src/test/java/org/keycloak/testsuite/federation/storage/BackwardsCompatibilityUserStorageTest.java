@@ -26,23 +26,31 @@ import java.util.List;
 
 import javax.ws.rs.core.Response;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.graphene.page.Page;
 import org.junit.Before;
 import org.junit.Test;
 import org.keycloak.admin.client.resource.UserResource;
+import org.keycloak.broker.provider.util.SimpleHttp;
 import org.keycloak.common.Profile;
 import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.credential.CredentialModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
+import org.keycloak.models.credential.OTPCredentialModel;
 import org.keycloak.models.utils.TimeBasedOTP;
+import org.keycloak.representations.account.CredentialMetadataRepresentation;
 import org.keycloak.representations.idm.ComponentRepresentation;
 import org.keycloak.representations.idm.CredentialRepresentation;
+import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.keycloak.services.resources.account.AccountCredentialResource;
 import org.keycloak.storage.StorageId;
 import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.testsuite.AbstractAuthTest;
 import org.keycloak.testsuite.Assert;
+import org.keycloak.testsuite.admin.AbstractAdminTest;
 import org.keycloak.testsuite.admin.ApiUtil;
 import org.keycloak.testsuite.arquillian.annotation.AuthServerContainerExclude;
 import org.keycloak.testsuite.arquillian.annotation.DisableFeature;
@@ -52,6 +60,8 @@ import org.keycloak.testsuite.pages.AppPage;
 import org.keycloak.testsuite.pages.LoginConfigTotpPage;
 import org.keycloak.testsuite.pages.LoginPage;
 import org.keycloak.testsuite.pages.LoginTotpPage;
+import org.keycloak.testsuite.util.OAuthClient;
+import org.keycloak.testsuite.util.TokenUtil;
 
 import static org.keycloak.testsuite.util.URLAssert.assertCurrentUrlDoesntStartWith;
 import static org.keycloak.testsuite.util.URLAssert.assertCurrentUrlStartsWith;
@@ -84,6 +94,14 @@ public class BackwardsCompatibilityUserStorageTest extends AbstractAuthTest {
 
 
     private TimeBasedOTP totp = new TimeBasedOTP();
+
+    @Override
+    public void addTestRealms(List<RealmRepresentation> testRealms) {
+        log.debug("Adding test realm for import from testrealm.json");
+        RealmRepresentation testRealm = AbstractAdminTest.loadJson(getClass().getResourceAsStream("/testrealm.json"), RealmRepresentation.class);
+
+        testRealms.add(testRealm);
+    }
 
     @Before
     public void addProvidersBeforeTest() throws URISyntaxException, IOException {
@@ -225,6 +243,47 @@ public class BackwardsCompatibilityUserStorageTest extends AbstractAuthTest {
         loginSuccessAndLogout("otp1", "pass");
     }
 
+    // Issue 19575
+    @Test
+    public void testOTPSetupAndRemoveThroughAccountMgmtAndLogin() throws URISyntaxException, IOException {
+        String userId = addUserAndResetPassword("otp1", "pass");
+        getCleanup().addUserId(userId);
+
+        // Get token for account REST (OTP credential not yet required during direct-grant login)
+        TokenUtil tokenUtil = new TokenUtil("otp1", "pass");
+        String accountToken = tokenUtil.getToken();
+
+        // Setup OTP
+        String totpSecret = setupOTPForUserWithRequiredAction(userId);
+
+        assertUserDontHaveDBCredentials();
+        assertUserHasOTPCredentialInUserStorage(true);
+
+        try (CloseableHttpClient httpClient = oauth.getHttpClient().get()) {
+            String accountCredentialsUrl = OAuthClient.AUTH_SERVER_ROOT + "/realms/test/account/credentials";
+
+            // Get credentials by account REST. User should have OTP credential
+            List<CredentialMetadataRepresentation> otpCreds = getOtpCredentialFromAccountREST(accountCredentialsUrl, httpClient, tokenUtil);
+            Assert.assertEquals(1, otpCreds.size());
+            String otpCredentialId = otpCreds.get(0).getCredential().getId();
+
+            // Delete OTP credential from federated storage
+            int deleteStatus = SimpleHttp.doDelete(accountCredentialsUrl + "/" + otpCredentialId, httpClient)
+                .auth(accountToken).acceptJson().asStatus();
+            Assert.assertEquals(204, deleteStatus);
+
+            // Get credentials by account REST. User should not have OTP credential
+            otpCreds = getOtpCredentialFromAccountREST(accountCredentialsUrl, httpClient, tokenUtil);
+            Assert.assertEquals(0, otpCreds.size());
+        }
+
+        assertUserDontHaveDBCredentials();
+        assertUserHasOTPCredentialInUserStorage(false);
+
+        // Assert user can login without OTP
+        loginSuccessAndLogout("otp1", "pass");
+    }
+
     @Test
     public void testDisableCredentialsInUserStorage() {
         String userId = addUserAndResetPassword("otp1", "pass");
@@ -304,5 +363,15 @@ public class BackwardsCompatibilityUserStorageTest extends AbstractAuthTest {
             return storageFactory.hasUserOTP("otp1");
         }, Boolean.class);
         Assert.assertEquals(expectedUserHasOTP, hasUserOTP);
+    }
+
+    private List<CredentialMetadataRepresentation> getOtpCredentialFromAccountREST(String accountCredentialsUrl, CloseableHttpClient httpClient, TokenUtil tokenUtil) throws IOException {
+        List<AccountCredentialResource.CredentialContainer> credentials = SimpleHttp.doGet(accountCredentialsUrl, httpClient)
+                .auth(tokenUtil.getToken()).asJson(new TypeReference<List<AccountCredentialResource.CredentialContainer>>() {});
+
+        return credentials.stream()
+                .filter(credentialContainer -> OTPCredentialModel.TYPE.equals(credentialContainer.getType()))
+                .map(AccountCredentialResource.CredentialContainer::getUserCredentialMetadatas)
+                .findFirst().get();
     }
 }
