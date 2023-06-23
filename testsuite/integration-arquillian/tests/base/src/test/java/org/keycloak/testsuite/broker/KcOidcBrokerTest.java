@@ -447,15 +447,25 @@ public final class KcOidcBrokerTest extends AbstractAdvancedBrokerTest {
 
     @Test
     public void testIdPForceSyncUserAttributes() {
-        checkUpdatedUserAttributesIdP(true);
+        checkUpdatedUserAttributesIdP(true, false);
+    }
+
+    @Test
+    public void testIdPForceSyncTrustEmailUserAttributes() {
+        checkUpdatedUserAttributesIdP(true, true);
     }
 
     @Test
     public void testIdPNotForceSyncUserAttributes() {
-        checkUpdatedUserAttributesIdP(false);
+        checkUpdatedUserAttributesIdP(false, false);
     }
 
-    private void checkUpdatedUserAttributesIdP(boolean isForceSync) {
+    @Test
+    public void testIdPNotForceSyncTrustEmailUserAttributes() {
+        checkUpdatedUserAttributesIdP(false, true);
+    }
+
+    private void checkUpdatedUserAttributesIdP(boolean isForceSync, boolean isTrustEmail) {
         final String IDP_NAME = getBrokerConfiguration().getIDPAlias();
         final String USERNAME = "demoUser";
 
@@ -470,7 +480,8 @@ public final class KcOidcBrokerTest extends AbstractAdvancedBrokerTest {
         UsersResource providerUserResource = Optional.ofNullable(realmsResouce().realm(bc.providerRealmName()).users()).orElse(null);
         assertThat("Cannot get User Resource from Provider realm", providerUserResource, Matchers.notNullValue());
 
-        String userID = createUser(bc.providerRealmName(), USERNAME, USERNAME, FIRST_NAME, LAST_NAME, EMAIL);
+        String userID = createUser(bc.providerRealmName(), USERNAME, USERNAME, FIRST_NAME, LAST_NAME, EMAIL,
+                user -> user.setEmailVerified(true));
         assertThat("Cannot create user : " + USERNAME, userID, Matchers.notNullValue());
 
         try {
@@ -483,7 +494,8 @@ public final class KcOidcBrokerTest extends AbstractAdvancedBrokerTest {
             IdentityProviderRepresentation idProvider = Optional.ofNullable(consumerIdentityResource.toRepresentation()).orElse(null);
             assertThat("Cannot get Identity Provider", idProvider, Matchers.notNullValue());
 
-            updateIdPSyncMode(idProvider, consumerIdentityResource, isForceSync ? IdentityProviderSyncMode.FORCE : IdentityProviderSyncMode.IMPORT);
+            updateIdPSyncMode(idProvider, consumerIdentityResource,
+                    isForceSync ? IdentityProviderSyncMode.FORCE : IdentityProviderSyncMode.IMPORT, isTrustEmail);
 
             driver.navigate().to(getAccountUrl(getConsumerRoot(), bc.consumerRealmName()));
             WaitUtils.waitForPageToLoad();
@@ -492,8 +504,24 @@ public final class KcOidcBrokerTest extends AbstractAdvancedBrokerTest {
             logInWithIdp(IDP_NAME, USERNAME, USERNAME);
             accountUpdateProfilePage.assertCurrent();
 
+            RealmResource consumerRealmResource = realmsResouce().realm(bc.consumerRealmName());
+            List<UserRepresentation> foundUsers = consumerRealmResource.users().search(USERNAME);
+            assertThat(foundUsers, Matchers.hasSize(1));
+            UserRepresentation consumerUser = foundUsers.get(0);
+            assertThat(consumerUser, Matchers.notNullValue());
+            String consumerUserID = consumerUser.getId();
+            UserResource consumerUserResource = consumerRealmResource.users().get(consumerUserID);
+            assertThat(consumerUserResource.toRepresentation().isEmailVerified(), Matchers.equalTo(isTrustEmail));
+
             logoutFromRealm(getProviderRoot(), bc.providerRealmName());
             logoutFromRealm(getConsumerRoot(), bc.consumerRealmName());
+
+            // set email verified to true on the consumer resource
+            consumerUser = consumerUserResource.toRepresentation();
+            consumerUser.setEmailVerified(true);
+            consumerUserResource.update(consumerUser);
+            consumerUserResource = consumerRealmResource.users().get(consumerUserID);
+            assertThat(consumerUserResource.toRepresentation().isEmailVerified(), Matchers.is(true));
 
             driver.navigate().to(getAccountUrl(getProviderRoot(), bc.providerRealmName()));
             WaitUtils.waitForPageToLoad();
@@ -507,6 +535,11 @@ public final class KcOidcBrokerTest extends AbstractAdvancedBrokerTest {
             accountUpdateProfilePage.updateProfile(NEW_FIRST_NAME, NEW_LAST_NAME, NEW_EMAIL);
             logoutFromRealm(getProviderRoot(), bc.providerRealmName());
 
+            UserResource providerUserRes = providerUserResource.get(userID);
+            UserRepresentation providerUser = providerUserRes.toRepresentation();
+            providerUser.setEmailVerified(true);
+            providerUserRes.update(providerUser);
+
             driver.navigate().to(getAccountUrl(getConsumerRoot(), bc.consumerRealmName()));
             WaitUtils.waitForPageToLoad();
 
@@ -518,27 +551,32 @@ public final class KcOidcBrokerTest extends AbstractAdvancedBrokerTest {
             assertThat(accountUpdateProfilePage.getEmail(), Matchers.equalTo(isForceSync ? NEW_EMAIL : EMAIL));
             assertThat(accountUpdateProfilePage.getFirstName(), Matchers.equalTo(isForceSync ? NEW_FIRST_NAME : FIRST_NAME));
             assertThat(accountUpdateProfilePage.getLastName(), Matchers.equalTo(isForceSync ? NEW_LAST_NAME : LAST_NAME));
+            assertThat(consumerUserResource.toRepresentation().isEmailVerified(), Matchers.equalTo(!isForceSync || isTrustEmail));
         } finally {
             providerUserResource.delete(userID);
             assertThat("User wasn't deleted", providerUserResource.search(USERNAME).size(), Matchers.is(0));
         }
     }
 
-    private void updateIdPSyncMode(IdentityProviderRepresentation idProvider, IdentityProviderResource idProviderResource, IdentityProviderSyncMode syncMode) {
+    private void updateIdPSyncMode(IdentityProviderRepresentation idProvider, IdentityProviderResource idProviderResource,
+            IdentityProviderSyncMode syncMode, boolean trustEmail) {
         assertThat(idProvider, Matchers.notNullValue());
         assertThat(idProviderResource, Matchers.notNullValue());
         assertThat(syncMode, Matchers.notNullValue());
 
-        if (idProvider.getConfig().get(IdentityProviderModel.SYNC_MODE).equals(syncMode.name())) {
+        if (idProvider.getConfig().get(IdentityProviderModel.SYNC_MODE).equals(syncMode.name())
+                && idProvider.isTrustEmail() == trustEmail) {
             return;
         }
 
         idProvider.getConfig().put(IdentityProviderModel.SYNC_MODE, syncMode.name());
+        idProvider.setTrustEmail(trustEmail);
         idProviderResource.update(idProvider);
 
         idProvider = Optional.ofNullable(idProviderResource.toRepresentation()).orElse(null);
         assertThat("Cannot get Identity Provider", idProvider, Matchers.notNullValue());
         assertThat("Sync mode didn't change", idProvider.getConfig().get(IdentityProviderModel.SYNC_MODE), Matchers.equalTo(syncMode.name()));
+        assertThat("TrustEmail didn't change", idProvider.isTrustEmail(), Matchers.equalTo(trustEmail));
     }
 
     private UserRepresentation getFederatedIdentity() {
