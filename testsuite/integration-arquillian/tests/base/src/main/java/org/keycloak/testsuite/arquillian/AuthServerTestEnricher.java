@@ -417,23 +417,27 @@ public class AuthServerTestEnricher {
 
     public void deployProviders(@Observes(precedence = -1) AfterStart event) throws DeploymentException {
         if (isAuthServerRemote() && currentContainerName.contains("auth-server")) {
-            this.testsuiteProvidersArchive = ShrinkWrap.create(ZipImporter.class, "testsuiteProviders.jar")
-                    .importFrom(Maven.configureResolverViaPlugin()
-                        .resolve("org.keycloak.testsuite:integration-arquillian-testsuite-providers")
-                        .withoutTransitivity()
-                        .asSingleFile()
-                    ).as(JavaArchive.class)
-                    .addAsManifestResource("jboss-deployment-structure.xml");
-            event.getDeployableContainer().deploy(testsuiteProvidersArchive);
+            if (testsuiteProvidersArchive == null) {
+                this.testsuiteProvidersArchive = ShrinkWrap.create(ZipImporter.class, "testsuiteProviders.jar")
+                        .importFrom(Maven.configureResolverViaPlugin()
+                                .resolve("org.keycloak.testsuite:integration-arquillian-testsuite-providers")
+                                .withoutTransitivity()
+                                .asSingleFile()
+                        ).as(JavaArchive.class)
+                        .addAsManifestResource("jboss-deployment-structure.xml");
+                event.getDeployableContainer().deploy(testsuiteProvidersArchive);
+            }
 
-            this.testsuiteProvidersDeploymentArchive = ShrinkWrap.create(ZipImporter.class, "testsuiteProvidersDeployment.jar")
-                    .importFrom(Maven.configureResolverViaPlugin()
-                        .resolve("org.keycloak.testsuite:integration-arquillian-testsuite-providers-deployment")
-                        .withoutTransitivity()
-                        .asSingleFile()
-                    ).as(JavaArchive.class)
-                    .addAsManifestResource("jboss-deployment-structure.xml");
-            event.getDeployableContainer().deploy(testsuiteProvidersDeploymentArchive);
+            if (testsuiteProvidersDeploymentArchive == null) {
+                this.testsuiteProvidersDeploymentArchive = ShrinkWrap.create(ZipImporter.class, "testsuiteProvidersDeployment.jar")
+                        .importFrom(Maven.configureResolverViaPlugin()
+                                .resolve("org.keycloak.testsuite:integration-arquillian-testsuite-providers-deployment")
+                                .withoutTransitivity()
+                                .asSingleFile()
+                        ).as(JavaArchive.class)
+                        .addAsManifestResource("jboss-deployment-structure.xml");
+                event.getDeployableContainer().deploy(testsuiteProvidersDeploymentArchive);
+            }
         }
     }
 
