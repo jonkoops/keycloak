@@ -47,7 +47,7 @@ public class MigrateJsonOperation implements OperationStepHandler {
     public static final String OPERATION_NAME = "migrate-json";
     
     private static final String CONFIG_DIR = System.getProperty("jboss.server.config.dir");
-    private static final Path DEFAULT_CONFIG_FILE = Paths.get(CONFIG_DIR, "keycloak-server.json");
+    private static final Path DEFAULT_CONFIG_FILE = CONFIG_DIR != null? Paths.get(CONFIG_DIR, "keycloak-server.json") : null;
 
     private static final AttributeDefinition FILE_ATTRIBUTE = SimpleAttributeDefinitionBuilder.create("file", ModelType.BYTES, true).build();
     public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, KeycloakExtension.getResourceDescriptionResolver())
