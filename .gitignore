@@ -75,3 +75,6 @@ target
 # Quarkus ephemeral data #
 ##########################
 quarkus/data/*.db
+
+# SDKMAM environment file
+.sdkmanrc
