@@ -107,6 +107,15 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>auth-server-eap-java17</id>
+            <activation>
+                <jdk>[17,)</jdk>
+            </activation>
+            <properties>
+                <skip.java17.enablement>false</skip.java17.enablement>
+            </properties>
+        </profile>
     </profiles>
 
 </project>

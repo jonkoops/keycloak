@@ -95,6 +95,8 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import static org.keycloak.testsuite.arquillian.ServerTestEnricherUtil.addHttpsListener;
+import static org.keycloak.testsuite.arquillian.ServerTestEnricherUtil.addHttpsListenerUndertow;
+import static org.keycloak.testsuite.arquillian.ServerTestEnricherUtil.executeOperation;
 import static org.keycloak.testsuite.arquillian.ServerTestEnricherUtil.reloadOrRestartTimeoutClient;
 import static org.keycloak.testsuite.arquillian.ServerTestEnricherUtil.removeHttpsListener;
 import static org.keycloak.testsuite.util.ServerURLs.getAuthServerContextRoot;
@@ -838,11 +840,22 @@ public class AuthServerTestEnricher {
     private static void enableTLS(OnlineManagementClient client) throws Exception {
         Administration administration = new Administration(client);
         Operations operations = new Operations(client);
+        boolean isElytronEnabled = !operations.exists(Address.subsystem("security"));
 
-        if(!operations.exists(Address.coreService("management").and("security-realm", "UndertowRealm"))) {
-            client.execute("/core-service=management/security-realm=UndertowRealm:add()");
-            client.execute("/core-service=management/security-realm=UndertowRealm/server-identity=ssl:add(keystore-relative-to=jboss.server.config.dir,keystore-password=secret,keystore-path=keycloak.jks");
-            client.execute("/core-service=management/security-realm=UndertowRealm/authentication=truststore:add(keystore-relative-to=jboss.server.config.dir,keystore-password=secret,keystore-path=keycloak.truststore");
+        if (isElytronEnabled && !operations.exists(Address.subsystem("elytron").and("server-ssl-context", "KCSslContext"))) {
+            executeOperation(client, "/subsystem=elytron/key-store=KCKeyStore:add(path=keycloak.jks,relative-to=jboss.server.config.dir,credential-reference={clear-text=secret},type=JKS)");
+            executeOperation(client, "/subsystem=elytron/key-manager=KCKeyManager:add(key-store=KCKeyStore,credential-reference={clear-text=secret})");
+            executeOperation(client, "/subsystem=elytron/key-store=KCTrustStore:add(relative-to=jboss.server.config.dir,path=keycloak.truststore,credential-reference={clear-text=secret},type=JKS)");
+            executeOperation(client, "/subsystem=elytron/trust-manager=KCTrustManager:add(key-store=KCTrustStore,algorithm=PKIX)");
+            executeOperation(client, "/subsystem=elytron/server-ssl-context=KCSslContext:add(key-manager=KCKeyManager,trust-manager=KCTrustManager,want-client-auth=true)");
+
+            removeHttpsListener(client, administration);
+            addHttpsListenerUndertow(client);
+            reloadOrRestartTimeoutClient(administration);
+        } else if(!isElytronEnabled && !operations.exists(Address.coreService("management").and("security-realm", "UndertowRealm"))) {
+            executeOperation(client, "/core-service=management/security-realm=UndertowRealm:add()");
+            executeOperation(client, "/core-service=management/security-realm=UndertowRealm/server-identity=ssl:add(keystore-relative-to=jboss.server.config.dir,keystore-password=secret,keystore-path=keycloak.jks");
+            executeOperation(client, "/core-service=management/security-realm=UndertowRealm/authentication=truststore:add(keystore-relative-to=jboss.server.config.dir,keystore-password=secret,keystore-path=keycloak.truststore");
 
             removeHttpsListener(client, administration);
             addHttpsListener(client);

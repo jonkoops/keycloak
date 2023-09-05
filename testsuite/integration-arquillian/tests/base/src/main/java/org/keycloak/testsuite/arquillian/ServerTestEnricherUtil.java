@@ -28,6 +28,11 @@ import org.wildfly.extras.creaper.core.online.operations.admin.Administration;
 
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
+import org.jboss.as.controller.client.helpers.ClientConstants;
+import org.jboss.dmr.ModelNode;
+import org.wildfly.extras.creaper.core.online.CliException;
+import org.wildfly.extras.creaper.core.online.ModelNodeResult;
+import org.wildfly.extras.creaper.core.online.operations.Operations;
 
 public class ServerTestEnricherUtil {
 
@@ -60,7 +65,7 @@ public class ServerTestEnricherUtil {
                     .build());
             return true;
         } catch (CommandFailedException e) {
-            LOG.warn("Cannot add HTTPS listener 'https'");
+            LOG.warn("Cannot add HTTPS listener 'https'", e);
             return false;
         }
     }
@@ -77,8 +82,40 @@ public class ServerTestEnricherUtil {
                     .build());
             return true;
         } catch (CommandFailedException e) {
-            LOG.warn("Cannot add HTTPS listener 'https'");
+            LOG.warn("Cannot add HTTPS listener 'https'", e);
             return false;
+        }
+    }
+
+    /**
+     * Adds the https listener configured for undertow.
+     * @param client The management client
+     * @return true if ok, false othrewise
+     */
+    public static boolean addHttpsListenerUndertow(OnlineManagementClient client) {
+        try {
+            LOG.debug("Add Undertow HTTPS listener 'https' with undertow");
+            executeOperation(client, "/subsystem=undertow/server=default-server/https-listener=https:add(ssl-context=KCSslContext,socket-binding=https)");
+            return true;
+        } catch (RuntimeException e) {
+            LOG.warn("Cannot add HTTPS listener 'https'", e);
+            return false;
+        }
+    }
+
+    /**
+     * Executes the operation and throws a runtime exception is the operation fails.
+     * @param client The client
+     * @param command The command to execute
+     */
+    public static void executeOperation(OnlineManagementClient client, String command) {
+        try {
+            ModelNodeResult result = client.execute(command);
+            if (result.isFailed()) {
+                throw new IllegalStateException("Error executing CLI=" + command + " failure=" + result.get(ClientConstants.FAILURE_DESCRIPTION).asString("unknown reason"));
+            }
+        } catch (CliException|IOException e) {
+            throw new IllegalStateException("Error executing CLI=" + command, e);
         }
     }
 
