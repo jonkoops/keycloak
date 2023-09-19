@@ -19,6 +19,7 @@ import { HelpItem } from "ui-shared";
 
 import { adminClient } from "../admin-client";
 import { useAlerts } from "../components/alert/Alerts";
+import { TextFormField } from "../components/form-fields/TextFormField";
 import { FormAccess } from "../components/form/FormAccess";
 import { GroupPickerDialog } from "../components/group/GroupPickerDialog";
 import { KeycloakTextInput } from "../components/keycloak-text-input/KeycloakTextInput";
@@ -247,46 +248,28 @@ export const UserForm = ({
               />
             </FormGroup>
           )}
-          <FormGroup
+          <TextFormField
+            data-testid="email-input"
             label={t("email")}
-            fieldId="kc-email"
-            validated={errors.email ? "error" : "default"}
-            helperTextInvalid={t("users:emailInvalid")}
-          >
-            <KeycloakTextInput
-              type="email"
-              id="kc-email"
-              data-testid="email-input"
-              {...register("email", {
-                pattern: emailRegexPattern,
-              })}
-            />
-          </FormGroup>
+            type="email"
+            {...register("email", {
+              pattern: {
+                value: emailRegexPattern,
+                message: t("emailInvalid"),
+              },
+            })}
+          />
           <EmailVerified />
-          <FormGroup
+          <TextFormField
+            data-testid="firstName-input"
             label={t("firstName")}
-            fieldId="kc-firstName"
-            validated={errors.firstName ? "error" : "default"}
-            helperTextInvalid={t("required")}
-          >
-            <KeycloakTextInput
-              data-testid="firstName-input"
-              id="kc-firstName"
-              {...register("firstName")}
-            />
-          </FormGroup>
-          <FormGroup
+            {...register("firstName")}
+          />
+          <TextFormField
+            data-testid="lastName-input"
             label={t("lastName")}
-            fieldId="kc-lastName"
-            validated={errors.lastName ? "error" : "default"}
-          >
-            <KeycloakTextInput
-              data-testid="lastName-input"
-              id="kc-lastname"
-              aria-label={t("lastName")}
-              {...register("lastName")}
-            />
-          </FormGroup>
+            {...register("lastName")}
+          />
         </>
       )}
       {isBruteForceProtected && (
