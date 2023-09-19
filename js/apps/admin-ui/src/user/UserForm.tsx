@@ -230,26 +230,17 @@ export const UserForm = ({
       ) : (
         <>
           {!realm?.registrationEmailAsUsername && (
-            <FormGroup
+            <TextFormField
               label={t("username")}
-              fieldId="kc-username"
-              isRequired
-              validated={errors.username ? "error" : "default"}
-              helperTextInvalid={t("required")}
-            >
-              <KeycloakTextInput
-                id="kc-username"
-                isReadOnly={
-                  !!user?.id &&
-                  !realm?.editUsernameAllowed &&
-                  realm?.editUsernameAllowed !== undefined
-                }
-                {...register("username")}
-              />
-            </FormGroup>
+              {...register("username", {
+                required: {
+                  value: true,
+                  message: t("required"),
+                },
+              })}
+            />
           )}
           <TextFormField
-            data-testid="email-input"
             label={t("email")}
             type="email"
             {...register("email", {
@@ -260,16 +251,8 @@ export const UserForm = ({
             })}
           />
           <EmailVerified />
-          <TextFormField
-            data-testid="firstName-input"
-            label={t("firstName")}
-            {...register("firstName")}
-          />
-          <TextFormField
-            data-testid="lastName-input"
-            label={t("lastName")}
-            {...register("lastName")}
-          />
+          <TextFormField label={t("firstName")} {...register("firstName")} />
+          <TextFormField label={t("lastName")} {...register("lastName")} />
         </>
       )}
       {isBruteForceProtected && (

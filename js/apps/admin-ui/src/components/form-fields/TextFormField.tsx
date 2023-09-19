@@ -18,19 +18,28 @@ export interface TextFormFieldProps<
 > extends UseControllerProps<T, P> {
   label: string;
   type?: KeycloakTextInputProps["type"];
+  required?: boolean;
 }
 
 export function TextFormField<
   T extends FieldValues,
   P extends FieldPath<T> = FieldPath<T>,
->({ label, type, ...props }: TextFormFieldProps<T, P>) {
+>({ label, type, required, ...props }: TextFormFieldProps<T, P>) {
   const defaultValue = props.defaultValue ?? ("" as PathValue<T, P>);
   const { field, fieldState } = useController({ ...props, defaultValue });
-  const { id, formGroupProps } = useFormField({ label, fieldState });
+  const { id, formGroupProps } = useFormField({ label, fieldState, required });
 
   return (
     <FormGroup {...formGroupProps}>
-      <KeycloakTextInput id={id} type={type} {...props} {...field} />
+      <KeycloakTextInput
+        id={id}
+        type={type}
+        {...props}
+        {...field}
+        // Looks like there are two ways to set required, so we'll set both.
+        required={required}
+        isRequired={required}
+      />
     </FormGroup>
   );
 }
