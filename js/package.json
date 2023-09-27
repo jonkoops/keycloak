@@ -3,6 +3,14 @@
   "scripts": {
     "prepare": "cd .. && husky install js/.husky"
   },
+  "workspaces": [
+    "apps/account-ui",
+    "apps/admin-ui",
+    "libs/keycloak-admin-client",
+    "libs/keycloak-js",
+    "libs/keycloak-masthead",
+    "libs/ui-shared"
+  ],
   "devDependencies": {
     "@types/node": "^20.7.0",
     "@typescript-eslint/eslint-plugin": "^6.7.3",
@@ -24,7 +32,6 @@
     "typescript": "^5.2.2",
     "wireit": "^0.14.0"
   },
-  "packageManager": "pnpm@8.6.12",
   "lint-staged": {
     "*.{js,jsx,mjs,ts,tsx}": "eslint --cache --fix"
   }
