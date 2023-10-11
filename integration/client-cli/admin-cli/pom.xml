@@ -99,13 +99,13 @@
                                     </includes>
                                 </filter>
                                 <filter>
-                                    <artifact>org.bouncycastle:bcprov-jdk15on</artifact>
+                                    <artifact>org.bouncycastle:bcprov-jdk18on</artifact>
                                     <includes>
                                         <include>**/**</include>
                                     </includes>
                                 </filter>
                                 <filter>
-                                    <artifact>org.bouncycastle:bcpkix-jdk15on</artifact>
+                                    <artifact>org.bouncycastle:bcpkix-jdk18on</artifact>
                                     <excludes>
                                         <exclude>**/**</exclude>
                                     </excludes>
