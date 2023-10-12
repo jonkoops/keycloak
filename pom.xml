@@ -639,6 +639,12 @@
                 <groupId>org.apache.directory.server</groupId>
                 <artifactId>apacheds-core</artifactId>
                 <version>${apacheds.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.bouncycastle</groupId>
+                        <artifactId>bcprov-jdk15on</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.directory.server</groupId>
@@ -649,6 +655,12 @@
                 <groupId>org.apache.directory.server</groupId>
                 <artifactId>apacheds-core-annotations</artifactId>
                 <version>${apacheds.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.bouncycastle</groupId>
+                        <artifactId>bcprov-jdk15on</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.directory.server</groupId>
@@ -659,6 +671,12 @@
                 <groupId>org.apache.directory.server</groupId>
                 <artifactId>apacheds-server-annotations</artifactId>
                 <version>${apacheds.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.bouncycastle</groupId>
+                        <artifactId>bcprov-jdk15on</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.directory.api</groupId>
@@ -1676,11 +1694,22 @@
                 <groupId>com.webauthn4j</groupId>
                 <artifactId>webauthn4j-core</artifactId>
                 <version>${webauthn4j.version}</version>
+
             </dependency>
             <dependency>
                 <groupId>com.webauthn4j</groupId>
                 <artifactId>webauthn4j-util</artifactId>
                 <version>${webauthn4j.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.bouncycastle</groupId>
+                        <artifactId>bcprov-jdk15on</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.bouncycastle</groupId>
+                        <artifactId>bcpkix-jdk15on</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.kerby</groupId>
