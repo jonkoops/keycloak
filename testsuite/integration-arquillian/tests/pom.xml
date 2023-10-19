@@ -216,7 +216,7 @@
         <ieDriverArch>Win32</ieDriverArch>
         <ieDriverVersion/>
         <js.browser>phantomjs</js.browser>
-        <js.chromeArguments>--headless</js.chromeArguments>
+        <chromeArguments>--headless --window-size=1920,1080 --remote-allow-origins=*</chromeArguments>
         <htmlUnitBrowserVersion>chrome</htmlUnitBrowserVersion>
         <firefox_binary/> <!-- the path is set automatically based on the OS -->
         <firefoxLegacyDriver>false</firefoxLegacyDriver>
@@ -224,7 +224,6 @@
         <firefoxUserPreferences/>
         <firefoxHeadless>false</firefoxHeadless>
         <chromeBinary/>
-        <chromeArguments/>
         <chromeDriverVersion/>
 
         <appium.platformName/>
