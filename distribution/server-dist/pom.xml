@@ -219,6 +219,39 @@
                     </execution>
                 </executions>
             </plugin>
+            <!-- added to apply 0-day patch for EAP 7.4.13. It has to be removed with the next version of EAP (i.e 7.4.14). -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>download-eap-0-day-patch</id>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <phase>process-classes</phase>
+                        <configuration>
+                            <skip>${skip.0-day-patch}</skip>
+                            <workingDirectory>target</workingDirectory>
+                            <executable>curl</executable>
+                            <commandlineArgs>-sSf -o eap-patch.zip ${eap.patch.url}</commandlineArgs>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>apply-eap-0-day-patch</id>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <phase>process-classes</phase>
+                        <configuration>
+                            <skip>${skip.0-day-patch}</skip>
+                            <workingDirectory>target</workingDirectory>
+                            <executable>./${server.output.dir.prefix}-${server.output.dir.version}/bin/jboss-cli.sh</executable>
+                            <commandlineArgs>--command="patch apply eap-patch.zip"</commandlineArgs>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>

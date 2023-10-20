@@ -57,6 +57,9 @@
         -->
 
         <product.rhsso.version>7.6.6.GA</product.rhsso.version>
+        <!-- use to patch EAP with 0-day patch -->
+        <eap.patch.url>http://download.eng.bos.redhat.com/devel/candidates/JBSSO/JBSSO-7.6.6.CR1/rhsso-2729.zip</eap.patch.url>
+        <skip.0-day-patch>false</skip.0-day-patch>
 
         <product.build-time>${timestamp}</product.build-time>
         <wildfly.version>23.0.2.Final</wildfly.version>
