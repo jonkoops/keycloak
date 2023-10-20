@@ -56,7 +56,7 @@
         the script continues to work
         -->
 
-        <product.rhsso.version>7.6.5.GA</product.rhsso.version>
+        <product.rhsso.version>7.6.6.GA</product.rhsso.version>
 
         <product.build-time>${timestamp}</product.build-time>
         <wildfly.version>23.0.2.Final</wildfly.version>
