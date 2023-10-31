@@ -23,7 +23,7 @@
     <parent>
         <artifactId>keycloak-examples-broker-parent</artifactId>
         <groupId>org.keycloak</groupId>
-        <version>18.0.10-SNAPSHOT</version>
+        <version>18.0.10</version>
     </parent>
 
     <name>Keycloak Broker Examples - Twitter Authentication</name>
