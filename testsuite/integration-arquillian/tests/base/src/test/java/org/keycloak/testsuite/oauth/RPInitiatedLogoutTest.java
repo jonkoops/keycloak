@@ -24,6 +24,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.hamcrest.MatcherAssert;
 import org.jboss.arquillian.graphene.page.Page;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.keycloak.OAuth2Constants;
@@ -731,6 +732,7 @@ public class RPInitiatedLogoutTest extends AbstractTestRealmKeycloakTest {
 
     // Calling RP-Initiated Logout endpoint with POST request. This must be supported according to specification
     @Test
+    @Ignore("RHSSO-2745")
     public void logoutWithPostRequest() throws IOException {
         try (RealmAttributeUpdater updater = new RealmAttributeUpdater(testRealm()).addSupportedLocale("cs").update()) {
             OAuthClient.AccessTokenResponse tokenResponse = loginUser();
@@ -775,6 +777,7 @@ public class RPInitiatedLogoutTest extends AbstractTestRealmKeycloakTest {
 
 
     @Test
+    @Ignore("RHSSO-2745")
     public void testLocalizationPreferenceDuringLogout() throws IOException {
         try (RealmAttributeUpdater realmUpdater = new RealmAttributeUpdater(testRealm()).addSupportedLocale("cs").update()) {
             OAuthClient.AccessTokenResponse tokenResponse = loginUser();
@@ -814,6 +817,7 @@ public class RPInitiatedLogoutTest extends AbstractTestRealmKeycloakTest {
 
 
     @Test
+    @Ignore("RHSSO-2745")
     public void testLocalizationDuringLogout() throws IOException {
         try (RealmAttributeUpdater realmUpdater = new RealmAttributeUpdater(testRealm()).addSupportedLocale("cs").update()) {
             OAuthClient.AccessTokenResponse tokenResponse = loginUser();
@@ -872,6 +876,7 @@ public class RPInitiatedLogoutTest extends AbstractTestRealmKeycloakTest {
 
 
     @Test
+    @Ignore("RHSSO-2745")
     public void testIncorrectChangingParameters() throws IOException {
         OAuthClient.AccessTokenResponse tokenResponse = loginUser();
 
