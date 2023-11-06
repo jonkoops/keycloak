@@ -75,13 +75,23 @@
 
         <skip.java17.enablement>true</skip.java17.enablement>
         <cli.executable>bash</cli.executable>
-        <cli.jboss-cli.arg>jboss-cli.${script.suffix}</cli.jboss-cli.arg>
         <cli.working.dir>${auth.server.home}/bin</cli.working.dir>
-        <cli.win.working.dir/>
+        <cli.jboss-cli.script>${cli.working.dir}/jboss-cli.sh</cli.jboss-cli.script>
     </properties>
 
     <profiles>
-
+        <profile>
+            <id>windows-properties-cli</id>
+            <activation>
+                <os>
+                    <family>Windows</family>
+                </os>
+            </activation>
+            <properties>
+                <cli.executable>powershell.exe</cli.executable>
+                <cli.jboss-cli.script>-InputFormat None -File ${cli.working.dir}/jboss-cli.ps1</cli.jboss-cli.script>
+            </properties>
+        </profile>
         <profile>
             <id>auth-server-jboss-submodules</id>
             <activation>
@@ -340,15 +350,10 @@
                                 <configuration>
                                     <skip>${skip.java17.enablement}</skip>
                                     <executable>${cli.executable}</executable>
-                                    <workingDirectory>${cli.working.dir}</workingDirectory>
                                     <environmentVariables>
                                         <JAVA_HOME>${app.server.java.home}</JAVA_HOME>
                                     </environmentVariables>
-                                    <arguments>
-                                        <argument>${cli.jboss-cli.arg}</argument>
-                                        <argument>--file=${auth.server.home}/docs/examples/enable-elytron-se17.cli</argument>
-                                        <argument>${cli.win.working.dir}</argument>
-                                    </arguments>
+                                    <commandlineArgs>${cli.jboss-cli.script} --file=${auth.server.home}/docs/examples/enable-elytron-se17.cli</commandlineArgs>
                                 </configuration>
                             </execution>
                         </executions>
