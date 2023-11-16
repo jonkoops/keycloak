@@ -41,7 +41,7 @@
     <feature name="keycloak-osgi-adapter" version="${project.version}" resolver="(obr)">
         <details>The keycloak adapter core stuff</details>
         <feature>keycloak-adapter-core</feature>
-        <feature version="[2.3,8)">http-whiteboard</feature>
+        <feature version="[2.3,10.0)">http-whiteboard</feature>
         <bundle>mvn:org.keycloak/keycloak-osgi-adapter/${project.version}</bundle>
     </feature>
 
