@@ -42,7 +42,8 @@ public class SpiResourceAddHandler extends AbstractAddStepHandler {
         }
 
         SpiResourceDefinition.DEFAULT_PROVIDER.validateAndSet(operation, model);
-        
+        SpiResourceDefinition.PROPERTIES.validateAndSet(operation, model);
+
         KeycloakAdapterConfigService.INSTANCE.updateConfig(operation, model);
     }
 }

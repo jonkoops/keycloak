@@ -17,6 +17,10 @@
 package org.keycloak.subsystem.server.extension;
 
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -47,12 +51,12 @@ public class SubsystemParsingTestCase extends AbstractSubsystemBaseTest {
     
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("keycloak-server-1.1.xml");
+        return readResource("keycloak-server-1.2.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-keycloak-server_1_1.xsd";
+        return "schema/wildfly-keycloak-server_1_2.xsd";
     }
 
     @Override
@@ -60,5 +64,22 @@ public class SubsystemParsingTestCase extends AbstractSubsystemBaseTest {
         return new String[]{
             "/subsystem-templates/keycloak-server.xml"
         };
+    }
+
+    /**
+     * Tests a server subsystem configuration that includes a SPI that has properties.
+     *
+     * @throws Exception if an error occurs while running the test.
+     */
+    @Test
+    public void testSubsystemWithSpiProps12() throws Exception {
+        KernelServices servicesA = super.createKernelServicesBuilder(createAdditionalInitialization())
+                .setSubsystemXml(readResource("keycloak-server-with-spi-props-1.2.xml")).build();
+        Assert.assertTrue("Subsystem boot failed!", servicesA.isSuccessfulBoot());
+        ModelNode modelA = servicesA.readWholeModel();
+        super.validateModel(modelA);
+        // check the config has the specified SPI property.
+        ModelNode config = KeycloakAdapterConfigService.INSTANCE.getConfig();
+        Assert.assertEquals("Invalid configured timeout value",10000, config.get("user").get("storageProviderTimeout").asLong());
     }
 }

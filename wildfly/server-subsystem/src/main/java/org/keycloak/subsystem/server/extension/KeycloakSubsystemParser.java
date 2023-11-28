@@ -36,6 +36,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import java.util.List;
 
+import static org.keycloak.subsystem.server.extension.KeycloakExtension.NAMESPACE_1_1;
 import static org.keycloak.subsystem.server.extension.KeycloakExtension.PATH_SUBSYSTEM;
 import static org.keycloak.subsystem.server.extension.KeycloakSubsystemDefinition.MASTER_REALM_NAME;
 import static org.keycloak.subsystem.server.extension.KeycloakSubsystemDefinition.PROVIDERS;
@@ -125,6 +126,11 @@ class KeycloakSubsystemParser implements XMLStreamConstants, XMLElementReader<Li
         while (reader.hasNext() && nextTag(reader) != END_ELEMENT) {
             if (reader.getLocalName().equals(DEFAULT_PROVIDER.getXmlName())) {
                 DEFAULT_PROVIDER.parseAndSetParameter(reader.getElementText(), addSpi, reader);
+            } else if (reader.getLocalName().equals(SpiResourceDefinition.PROPERTIES.getXmlName())) {
+                if (reader.getNamespaceURI().equals(NAMESPACE_1_1)) {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
+                readProperties(SpiResourceDefinition.PROPERTIES, addSpi, reader);
             } else if (reader.getLocalName().equals(ProviderResourceDefinition.TAG_NAME)) {
                 readProvider(list, spiName, reader);
             }
@@ -184,7 +190,7 @@ class KeycloakSubsystemParser implements XMLStreamConstants, XMLElementReader<Li
      */
     @Override
     public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
-        context.startSubsystemElement(KeycloakExtension.NAMESPACE, false);
+        context.startSubsystemElement(KeycloakExtension.CURRENT_NAMESPACE, false);
         writeWebContext(writer, context);
         writeList(writer, context.getModelNode(), PROVIDERS, "provider");
         writeAdmin(writer, context);
@@ -224,6 +230,7 @@ class KeycloakSubsystemParser implements XMLStreamConstants, XMLElementReader<Li
             writer.writeAttribute("name", spi.getName());
             ModelNode spiElements = spi.getValue();
             DEFAULT_PROVIDER.marshallAsElement(spiElements, writer);
+            SpiResourceDefinition.PROPERTIES.marshallAsElement(spiElements, writer);
             writeProviders(writer, spiElements);
             writer.writeEndElement();
         }

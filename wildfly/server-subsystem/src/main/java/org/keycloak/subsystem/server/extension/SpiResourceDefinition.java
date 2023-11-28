@@ -18,6 +18,7 @@
 package org.keycloak.subsystem.server.extension;
 
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -38,8 +39,14 @@ public class SpiResourceDefinition extends SimpleResourceDefinition {
                     .setAllowExpression(true)
                     .setRestartAllServices()
                     .build();
-    
-    protected static final ReloadRequiredWriteAttributeHandler WRITE_ATTR_HANDLER = new ReloadRequiredWriteAttributeHandler(DEFAULT_PROVIDER);
+
+    static final PropertiesAttributeDefinition PROPERTIES =
+            new PropertiesAttributeDefinition.Builder("properties", true)
+                    .setRestartAllServices()
+                    .setAllowExpression(true)
+                    .build();
+
+    protected static final ReloadRequiredWriteAttributeHandler WRITE_ATTR_HANDLER = new ReloadRequiredWriteAttributeHandler(DEFAULT_PROVIDER, PROPERTIES);
     
     protected SpiResourceDefinition() {
         super(PathElement.pathElement(TAG_NAME),
@@ -53,6 +60,7 @@ public class SpiResourceDefinition extends SimpleResourceDefinition {
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         super.registerAttributes(resourceRegistration);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_PROVIDER, null, WRITE_ATTR_HANDLER);
+        resourceRegistration.registerReadWriteAttribute(PROPERTIES, null, WRITE_ATTR_HANDLER);
     }
     
     

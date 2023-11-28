@@ -38,7 +38,9 @@ import static org.keycloak.subsystem.server.logging.KeycloakLogger.ROOT_LOGGER;
 public class KeycloakExtension implements Extension {
 
     static final String SUBSYSTEM_NAME = "keycloak-server";
-    static final String NAMESPACE = "urn:jboss:domain:keycloak-server:1.1";
+    static final String NAMESPACE_1_1 = "urn:jboss:domain:keycloak-server:1.1";
+    static final String NAMESPACE_1_2 = "urn:jboss:domain:keycloak-server:1.2";
+    static final String CURRENT_NAMESPACE = NAMESPACE_1_2;
     static final PathElement PATH_SUBSYSTEM = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
 
     private static final String RESOURCE_NAME = KeycloakExtension.class.getPackage().getName() + ".LocalDescriptions";
@@ -63,7 +65,8 @@ public class KeycloakExtension implements Extension {
      */
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE, PARSER);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_1, PARSER);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_2, PARSER);
     }
 
     /**

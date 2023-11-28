@@ -130,7 +130,11 @@ public final class KeycloakAdapterConfigService {
                 ModelNode defaultProvider = spi.remove("default-provider");
                 spi.get("provider").set(defaultProvider);
             }
-            
+
+            if (spi.has("properties")) {
+                massageProperties(spi);
+            }
+
             copy.get(prop.getName()).set(spi);
         }
     }
@@ -141,21 +145,21 @@ public final class KeycloakAdapterConfigService {
         for (Property prop : providers.asPropertyList()) {
             ModelNode provider = prop.getValue();
             if (provider.has("properties")) {
-                massageProviderProps(provider);
+                massageProperties(provider);
             }
             spi.get(prop.getName()).set(provider);
         }
     }
     
-    private void massageProviderProps(ModelNode provider) {
-        if (!provider.hasDefined("properties")) return;
-        ModelNode providerProps = provider.remove("properties");
+    private void massageProperties(ModelNode node) {
+        if (!node.hasDefined("properties")) return;
+        ModelNode providerProps = node.remove("properties");
         for (Property prop : providerProps.asPropertyList()) {
             ModelNode value = prop.getValue();
             if (isArray(value.asString().trim())) {
-                provider.get(prop.getName()).set(ModelNode.fromString(value.asString()).asList());
+                node.get(prop.getName()).set(ModelNode.fromString(value.asString()).asList());
             } else {
-                provider.get(prop.getName()).set(value);
+                node.get(prop.getName()).set(value);
             }
         }
     }
