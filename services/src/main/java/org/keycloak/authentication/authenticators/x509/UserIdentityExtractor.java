@@ -206,7 +206,7 @@ public abstract class UserIdentityExtractor {
         private ASN1Encodable unwrap(ASN1Encodable encodable) {
             while (encodable instanceof ASN1TaggedObject) {
                 ASN1TaggedObject taggedObj = (ASN1TaggedObject) encodable;
-                encodable = taggedObj.toASN1Primitive();
+                encodable = taggedObj.getBaseObject();
             }
 
             return encodable;
