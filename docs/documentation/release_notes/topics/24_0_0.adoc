@@ -1,3 +1,13 @@
+= Deprecation of 'legacy' cookies
+
+Since the introduction of the https://web.dev/articles/samesite-cookies-explained[SameSite attribute] on cookies provided by Keycloak, another set of 'legacy' cookies (name suffixed in `_LEGACY`) were also introduced in order to support older browsers that are not compatible with this attribute. Since the `SameSite` attribute is now https://caniuse.com/same-site-cookie-attribute[widely supported], this behavior is now deprecated and will be removed in the next release, so that only the cookies using the `SameSite` attribute remain.
+
+You can restore this behavior (for now) by enabling the `legacy-cookies` feature. For example:
+
+```
+kc.[sh|bat] start --features legacy-cookies
+```
+
 = New Welcome Page
 
 The 'welcome' page that is shown when a user starts Keycloak for the first time, has been redesigned to provide a better setup experience and has been upgraded to the latest version of https://www.patternfly.org/[PatternFly]. The page layout has been simplified and now includes only a form to register the administrative user. After completing the registration, the user is redirected directly to the Administration Console.
