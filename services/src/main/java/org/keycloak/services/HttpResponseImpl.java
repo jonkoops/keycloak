@@ -22,7 +22,9 @@ import java.util.Set;
 
 import jakarta.ws.rs.core.HttpHeaders;
 
-import org.keycloak.http.HttpCookie;
+import jakarta.ws.rs.core.NewCookie;
+import jakarta.ws.rs.ext.RuntimeDelegate;
+import jakarta.ws.rs.ext.RuntimeDelegate.HeaderDelegate;
 import org.keycloak.http.HttpResponse;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakTransaction;
@@ -30,7 +32,7 @@ import org.keycloak.models.KeycloakTransaction;
 public class HttpResponseImpl implements HttpResponse, KeycloakTransaction {
 
     private final org.jboss.resteasy.spi.HttpResponse delegate;
-    private Set<HttpCookie> cookies;
+    private Set<NewCookie> cookies;
     private boolean transactionActive;
     private boolean writeCookiesOnTransactionComplete;
 
@@ -62,7 +64,7 @@ public class HttpResponseImpl implements HttpResponse, KeycloakTransaction {
     }
 
     @Override
-    public void setCookieIfAbsent(HttpCookie cookie) {
+    public void setCookieIfAbsent(NewCookie cookie) {
         if (cookie == null) {
             throw new IllegalArgumentException("Cookie is null");
         }
@@ -77,7 +79,9 @@ public class HttpResponseImpl implements HttpResponse, KeycloakTransaction {
                 return;
             }
 
-            addHeader(HttpHeaders.SET_COOKIE, cookie.toHeaderValue());
+
+            HeaderDelegate<NewCookie> headerDelegate = RuntimeDelegate.getInstance().createHeaderDelegate(NewCookie.class);
+            addHeader(HttpHeaders.SET_COOKIE, headerDelegate.toString());
         }
     }
 
