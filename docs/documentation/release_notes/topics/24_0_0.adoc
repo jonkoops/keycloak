@@ -6,6 +6,14 @@ image::images/new-welcome-screen.png["A screenshot of the new welcome page, show
 
 If you are using a custom theme, you may need to update it to support the new welcome page. For more details consult the link:{upgradingguide_link}[{upgradingguide_name}].
 
+= Secure Context now required
+
+From this release onward it is required that you access Keycloak from a https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts[secure context]. This change is necessary as many Web APIs and features are accessible only in a secure context, including those required for upcoming changes related to the https://privacysandbox.com/[Privacy Sandbox initiative].
+
+TODO: Add screenshot of the error page
+
+For more details consult the link:{upgradingguide_link}[{upgradingguide_name}].
+
 = Keycloak JS using `exports` field
 
 The Keycloak JS adapter now uses the https://webpack.js.org/guides/package-exports/[`exports` field] in `package.json`. This change improves support for more modern bundlers like Webpack 5 and Vite, but comes with some unavoidable breaking changes. Consult the link:{upgradingguide_link}[{upgradingguide_name}] for more details.

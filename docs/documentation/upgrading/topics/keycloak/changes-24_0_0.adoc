@@ -26,6 +26,14 @@ Images such as the background, logo and favicon are now loaded from the 'common'
 import=common/your-theme-name
 ----
 
+= Secure Context now required
+
+It is now required that you access Keycloak from a https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts[secure context], this is required both for local development, as well as running Keycloak in production.
+
+For local development ensure you are accessing Keycloak from `http://127.0.0.1`, `http://localhost` or a `http://*.localhost` URL (e.g. `http://my-keycloak-server.localhost/`). For production environments make sure that you are serving Keycloak from a secure `https://` connection.
+
+If you are unsure if your Keycloak instance is running in a secure context consult https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts#when_is_a_context_considered_secure["When is a context considered secure?"].
+
 = Keycloak JS imports might need to be updated
 
 If you are loading Keycloak JS directly from the Keycloak server, this section can be safely ignored. If you are loading Keycloak JS from the NPM package and are using a bundler like Webpack, Vite, and so on, you might need to make some changes to your code. The Keycloak JS package now uses the https://webpack.js.org/guides/package-exports/[`exports` field] in the package.json file. This means that you might have to change your imports:
