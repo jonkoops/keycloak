@@ -115,7 +115,55 @@
             <properties>
                 <skip.java17.enablement>false</skip.java17.enablement>
             </properties>
+
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <artifactId>maven-dependency-plugin</artifactId>
+                            <executions>
+                                <execution>
+                                    <id>copy-nashorn-module</id>
+                                    <phase>generate-resources</phase>
+                                    <goals>
+                                        <goal>copy</goal>
+                                    </goals>
+                                    <configuration>
+                                        <artifactItems>
+                                            <artifactItem>
+                                                <groupId>org.openjdk.nashorn</groupId>
+                                                <artifactId>nashorn-core</artifactId>
+                                                <version>${nashorn.version}</version>
+                                                <type>jar</type>
+                                            </artifactItem>
+                                        </artifactItems>
+                                        <outputDirectory>${project.build.directory}/nashorn</outputDirectory>
+                                        <overWriteIfNewer>true</overWriteIfNewer>
+                                    </configuration>
+                                </execution>
+                            </executions>
+                        </plugin>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-antrun-plugin</artifactId>
+                            <executions>
+                                <execution>
+                                    <id>deploy-nashorn-module</id>
+                                    <phase>generate-resources</phase>
+                                    <goals>
+                                        <goal>run</goal>
+                                    </goals>
+                                    <configuration>
+                                        <target>
+                                            <ant antfile="${common.resources}/ant/configure.xml" target="deploy-nashorn-module" />
+                                        </target>
+                                    </configuration>
+                                </execution>
+                            </executions>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
         </profile>
     </profiles>
-
 </project>

@@ -30,6 +30,7 @@ import org.keycloak.platform.Platform;
 import org.keycloak.platform.PlatformProvider;
 import org.keycloak.quarkus.runtime.InitializationException;
 import org.keycloak.quarkus.runtime.Environment;
+import org.keycloak.Config;
 
 import io.quarkus.runtime.Quarkus;
 
@@ -158,5 +159,11 @@ public class QuarkusPlatform implements PlatformProvider {
 
     private void reset() {
         deferredExceptions.clear();
+    }
+
+    @Override
+    public ClassLoader getScriptEngineClassLoader(Config.Scope scriptProviderConfig) {
+        // It is fine to return null assuming that nashorn and it's dependencies are included on the classpath (usually "providers" directory)
+        return null;
     }
 }

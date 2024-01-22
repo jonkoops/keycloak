@@ -126,6 +126,7 @@
         <ua-parser.version>1.5.2</ua-parser.version>
         <picketbox.version>5.0.3.Final</picketbox.version>
         <google.guava.version>32.1.1-jre</google.guava.version>
+        <nashorn.version>15.4</nashorn.version>
 
         <!-- Openshift -->
         <version.com.openshift.openshift-restclient-java>9.0.5.Final</version.com.openshift.openshift-restclient-java>
@@ -589,6 +590,11 @@
                 <groupId>org.glassfish</groupId>
                 <artifactId>jakarta.json</artifactId>
                 <version>${glassfish.json.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.openjdk.nashorn</groupId>
+                <artifactId>nashorn-core</artifactId>
+                <version>${nashorn.version}</version>
             </dependency>
 
             <!-- Twitter -->
