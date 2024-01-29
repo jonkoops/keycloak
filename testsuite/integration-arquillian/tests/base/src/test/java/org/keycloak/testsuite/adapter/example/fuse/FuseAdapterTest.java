@@ -61,6 +61,7 @@ import org.keycloak.testsuite.arquillian.annotation.AppServerContainer;
 import org.keycloak.testsuite.arquillian.annotation.DisableFeature;
 import org.keycloak.testsuite.auth.page.AuthRealm;
 import org.keycloak.testsuite.auth.page.account.Account;
+import org.keycloak.testsuite.pages.LogoutConfirmPage;
 import org.keycloak.testsuite.utils.arquillian.ContainerConstants;
 import org.keycloak.testsuite.auth.page.login.OIDCLogin;
 import org.keycloak.testsuite.util.DroneUtils;
@@ -106,6 +107,10 @@ public class FuseAdapterTest extends AbstractExampleAdapterTest {
     @Page
     @JavascriptBrowser
     protected Account testRealmAccount;
+
+    @Page
+    @JavascriptBrowser
+    protected LogoutConfirmPage logoutConfirmPage;
 
     @Override
     public void addAdapterTestRealms(List<RealmRepresentation> testRealms) {
@@ -343,8 +348,14 @@ public class FuseAdapterTest extends AbstractExampleAdapterTest {
         DroneUtils.getCurrentDriver().navigate().back();
         customerListing.clickLogOut();
 
-        // assert user not logged in
+        logoutConfirmPage.confirmLogout();
+
+        customerPortal.navigateTo();//needed for phantomjs
+        WaitUtils.waitForPageToLoad();
         customerPortal.clickCustomerListingLink();
+        WaitUtils.waitForPageToLoad();
+
+        // assert user not logged in
         assertCurrentUrlStartsWithLoginUrlOf(testRealmPage);
 
     }
@@ -366,6 +377,7 @@ public class FuseAdapterTest extends AbstractExampleAdapterTest {
         customerListing.navigateTo();
         WaitUtils.waitForPageToLoad();
         customerListing.clickLogOut();
+        logoutConfirmPage.confirmLogout();
         WaitUtils.waitForPageToLoad();
 
         WaitUtils.pause(2500);
@@ -396,7 +408,8 @@ public class FuseAdapterTest extends AbstractExampleAdapterTest {
         assertThat(productPortal.getProduct2SecuredText(), containsString("Product received: id=2"));
 
         productPortal.clickLogOutLink();
+        logoutConfirmPage.confirmLogout();
         WaitUtils.waitForPageToLoad();
-        assertCurrentUrlStartsWithLoginUrlOf(testRealmPage);
+        assertCurrentUrlStartsWith(testRealmPage);
     }
 }

@@ -30,6 +30,7 @@
         <property name="url" value="/product-portal/*"/>
     </bean>
 
+
     <bean id="keycloakPaxWebIntegration" class="org.keycloak.adapters.osgi.undertow.PaxWebIntegrationService"
           init-method="start" destroy-method="stop">
         <property name="bundleContext" ref="blueprintBundleContext" />
@@ -42,11 +43,23 @@
 
     <bean id="productServlet" class="org.keycloak.example.ProductPortalServlet" depends-on="keycloakPaxWebIntegration" />
 
-    <service ref="productServlet" interface="javax.servlet.Servlet">
+    <!--service ref="productServlet" interface="javax.servlet.Servlet">
         <service-properties>
-            <entry key="alias" value="/product-portal" />
+            <entry key="alias" value="/product-portal/*" />
             <entry key="servlet-name" value="ProductServlet" />
             <entry key="keycloak.config.file" value="/keycloak.json" />
+        </service-properties>
+    </service-->
+
+    <service ref="productServlet" interface="javax.servlet.Servlet">
+        <service-properties>
+            <entry key="osgi.http.whiteboard.servlet.name" value="ProductServlet" />
+            <entry key="osgi.http.whiteboard.servlet.pattern">
+                <array value-type="java.lang.String">
+                    <value>/product-portal/*</value>
+                </array>
+            </entry>
+            <entry key="keycloak.config" value="/keycloak.json" />
         </service-properties>
     </service>
 
