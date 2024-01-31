@@ -56,7 +56,7 @@
         the script continues to work
         -->
 
-        <product.rhsso.version>7.6.6.GA</product.rhsso.version>
+        <product.rhsso.version>7.6.7.GA</product.rhsso.version>
         <!-- use to patch EAP with 0-day patch -->
         <eap.patch.url>http://download.eng.bos.redhat.com/devel/candidates/JBSSO/JBSSO-7.6.6.CR1/rhsso-2729.zip</eap.patch.url>
         <skip.0-day-patch>true</skip.0-day-patch>
@@ -64,7 +64,7 @@
         <product.build-time>${timestamp}</product.build-time>
         <wildfly.version>23.0.2.Final</wildfly.version>
         <wildfly.build-tools.version>1.2.13.Final</wildfly.build-tools.version>
-        <eap.version>7.4.13.GA-redhat-00001</eap.version>
+        <eap.version>7.4.15.GA-redhat-00002</eap.version>
         <wildfly.core.version>15.0.1.Final</wildfly.core.version>
 
         <jboss.as.version>7.2.0.Final</jboss.as.version>
