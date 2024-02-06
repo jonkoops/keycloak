@@ -17,6 +17,7 @@
 
 package org.keycloak.protocol.oidc.endpoints;
 
+import jakarta.inject.Inject;
 import org.keycloak.common.util.UriUtils;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
@@ -34,12 +35,19 @@ import java.util.Set;
 
 import static org.keycloak.protocol.oidc.endpoints.IframeUtil.returnIframeFromResources;
 
+
+import io.quarkus.qute.TemplateInstance;
+import io.quarkus.qute.Template;
+
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public class LoginStatusIframeEndpoint {
 
     private final KeycloakSession session;
+
+    @Inject()
+    private Template template;
 
     public LoginStatusIframeEndpoint(KeycloakSession session) {
         this.session = session;
@@ -48,7 +56,11 @@ public class LoginStatusIframeEndpoint {
     @GET
     @Produces(MediaType.TEXT_HTML_UTF_8)
     public Response getLoginStatusIframe(@QueryParam("version") String version) {
-        return returnIframeFromResources("login-status-iframe.html", version, session);
+        String[] allowedOrigins = { "foo" };
+        TemplateInstance templateInstance = template.data("allowedOrigins", allowedOrigins);
+
+        return Response.ok(templateInstance.).build();
+        // return returnIframeFromResources("login-status-iframe.html", version, session);
     }
 
     @GET

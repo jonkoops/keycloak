@@ -46,4 +46,45 @@ public class IframeUtil {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
     }
+
+    public static Response returnIframeFromString(String value, String version, KeycloakSession session) {
+        CacheControl cacheControl;
+        if (version != null) {
+            if (!version.equals(Version.RESOURCES_VERSION)) {
+                return Response.status(Response.Status.NOT_FOUND).build();
+            }
+            cacheControl = CacheControlUtil.getDefaultCacheControl();
+        } else {
+            cacheControl = CacheControlUtil.noCache();
+        }
+
+        InputStream resource = IframeUtil.class.getResourceAsStream(fileName);
+        if (resource != null) {
+            session.getProvider(SecurityHeadersProvider.class).options().allowAnyFrameAncestor();
+            return Response.ok(resource).cacheControl(cacheControl).build();
+        } else {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+    }
+
+    private static Response buildResponse(Object value, String version, KeycloakSession session) {
+        if (version != null && !version.equals(Version.RESOURCES_VERSION)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        CacheControl cacheControl;
+        if (version != null) {
+            cacheControl = CacheControlUtil.getDefaultCacheControl();
+        } else {
+            cacheControl = CacheControlUtil.noCache();
+        }
+
+        InputStream resource = IframeUtil.class.getResourceAsStream(fileName);
+        if (resource != null) {
+            session.getProvider(SecurityHeadersProvider.class).options().allowAnyFrameAncestor();
+            return Response.ok(resource).cacheControl(cacheControl).build();
+        }
+
+        return Response.status(Response.Status.NOT_FOUND).build();
+    }
 }
