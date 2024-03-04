@@ -352,17 +352,6 @@ mvn -f testsuite/integration-arquillian/tests/other/springboot-tests/pom.xml \
     [-Pspringboot27]
 ```
 
-## Base UI tests
-Similarly to Admin Console tests, these tests are focused on UI, specifically on the parts of the server that are accessed by an end user (like Login page, or Account Console).
-They are designed to work with mobile browsers (alongside the standard desktop browsers). For details on the supported browsers and their configuration please refer to [Different Browsers chapter](#different-browsers).
-#### Execution example
-```
-mvn -f testsuite/integration-arquillian/tests/other/base-ui/pom.xml \
-    clean test \
-    -Pandroid \
-    -Dappium.avd=Nexus_5X_API_27
-```
-
 ## Disabling features
 Some features in Keycloak can be disabled. To run the testsuite with a specific feature disabled use the `auth.server.feature` system property. For example to run the tests with authorization disabled run:
 ```
@@ -454,28 +443,20 @@ You can use many different real-world browsers to run the integration tests.
 Although technically they can be run with almost every test in the testsuite, they can fail with some of them as the tests often require specific optimizations for given browser. Therefore, only some of the test modules have support to be run with specific browsers.
 
 #### Mozilla Firefox
-* **Supported test modules:** `console`, `base-ui`
 * **Supported version:** latest stable
 * **Driver download required:** [GeckoDriver](https://github.com/mozilla/geckodriver/releases)
 * **Run with:** `-Dbrowser=firefox -Dwebdriver.gecko.driver=path/to/geckodriver`; optionally you can specify `-Dfirefox_binary=path/to/firefox/binary`
 
 #### Google Chrome
-* **Supported test modules:** `console`, `base-ui`
 * **Supported version:** latest stable
 * **Driver download required:** [ChromeDriver](https://sites.google.com/a/chromium.org/chromedriver/) that corresponds with your version of the browser
 * **Run with:** `-Dbrowser=chrome -Dwebdriver.chrome.driver=path/to/chromedriver`
 
 #### Apple Safari
-* **Supported test modules:** `base-ui`
 * **Supported version:** latest stable
 * **Driver download required:** no (the driver is bundled with macOS)
 * **Run with:** `-Dbrowser=safari`
 
-#### [DEPRECATED] Mozilla Firefox with legacy driver
-* **Supported test modules:** `console`
-* **Supported version:** [52 ESR](http://ftp.mozilla.org/pub/firefox/releases/52.9.0esr/) ([Extended Support Release](https://www.mozilla.org/en-US/firefox/organizations/))
-* **Driver download required:** no
-* **Run with:** `-Dbrowser=firefox -DfirefoxLegacyDriver=true -Dfirefox_binary=path/to/firefox-52-esr/binary`
 
 #### Automatic driver downloads
 You can rely on automatic driver downloads which is provided by [Arquillian Drone](http://arquillian.org/arquillian-extension-drone/#_automatic_download). To do so just omit the `-Dwebdriver.{browser}.driver` CLI argument when running the tests.
@@ -491,7 +472,6 @@ The tests will try to start the Appium server automatically but you can do it ma
 To use a mobile browser you need to create a virtual device. The most convenient way to do so is to install the desired platform's IDE - either [Android Studio](https://developer.android.com/studio/) (for Android devices) or [Xcode](https://developer.apple.com/xcode/) (for iOS devices) - then you can create a device (smartphone/tablet) there. For details please refer to documentation of those IDEs.
 
 #### Google Chrome on Android
-* **Supported test modules:** `base-ui`
 * **Supported host OS:** Windows, Linux, macOS
 * **Supported browser version:** latest stable
 * **Supported mobile OS version:** Android 7.x, 8.x
@@ -503,7 +483,6 @@ To use a mobile browser you need to create a virtual device. The most convenient
 * Chrome on Android uses ChromeDriver similarly to regular desktop Chrome. The ChromeDriver is bundled with the Appium server. To use a newer ChromeDriver please follow the [Appium documentation](http://appium.io/docs/en/writing-running-appium/web/chromedriver/).
 
 #### Apple Safari on iOS
-* **Supported test modules:** `base-ui`
 * **Supported host OS:** macOS
 * **Supported browser version:** _depends on the mobile OS version_
 * **Supported mobile OS version:** iOS 11.x

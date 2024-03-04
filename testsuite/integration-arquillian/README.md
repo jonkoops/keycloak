@@ -110,36 +110,6 @@ UI testing is sometimes very tricky due to different demands and behaviours of d
 The base testsuite contains custom Arquillian extensions and most functional tests.
 The other test modules depend on this module.
 
-### Base UI Testsuite
-Contains most of the UI-focused tests that don't cover Admin Console, i.e. all the parts of the server that are intended to be accessed by an end user.
-The tests placed here are exclusively covering the UI functionality of the server, i.e. checking if all the page elements are visible, links clickable etc., and are focused on simplicity and stability.
-This differs them from other integration tests and Admin Console UI tests.
-
-They are designed to work with most of the desktop browsers (HtmlUnit included) as well as mobile browsers (Chrome on Android and Safari on iOS). Please see [HOW-TO-RUN.md](HOW-TO-RUN.md) for details on supported browsers.
-
-The tests are place in a separate module (`tests/other/base-ui`) and are disabled by default.
-
-#### Types of adapter tests
-
-1. Using *custom test servlets*
-2. Using *example demo apps* from `keycloak/examples` modules.
-
-#### Relative vs Non-relative scenario
-
-The test suite can handle both types.
-It automatically modifies imported test realms and deployments' adapter configs based on scenario type.
-
-| Scenario | Description | Realm config (server side) | Adapter config (client side) |
-| --- | --- | --- | --- |
-| **Relative** | auth server == app server | client `baseUrl`, `adminUrl` and `redirect-uris` can be relative | `auth-server-url` can be relative |
-| **Non-relative** | auth server != app server  | client `baseUrl`, `adminUrl` and `redirect-uris` need to include FQDN of the app server | `auth-server-url` needs to include FQDN of the auth server|
-
-#### Adapter Config Mode
-
-1. ~~**Provided** - In `standalone.xml` using `secure-deployment`. *Wildfly only.*~~ WIP
-2. **Bundled** - In the deployed war in `/WEB-INF/keycloak.json`. **Default.**
-
-
 ## Custom Arquillian Extensions
 
 Custom extensions are registered in `META-INF/services/org.jboss.arquillian.core.spi.LoadableExtension`.

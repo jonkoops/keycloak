@@ -34,7 +34,6 @@
         "UPLOAD_SCRIPTS",
         "ACCOUNT_API",
         "TOKEN_EXCHANGE",
-        "ACCOUNT2",
         "SCRIPTS",
         "ADMIN_FINE_GRAINED_AUTHZ",
         "OPENSHIFT_INTEGRATION",
@@ -43,7 +42,6 @@
      "previewFeatures":[
         "ACCOUNT_API",
         "TOKEN_EXCHANGE",
-        "ACCOUNT2",
         "SCRIPTS",
         "ADMIN_FINE_GRAINED_AUTHZ",
         "OPENSHIFT_INTEGRATION",
