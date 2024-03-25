@@ -63,7 +63,7 @@ describe("Realm settings general tab tests", () => {
     sidebarPage.goToRealmSettings();
     realmSettingsPage.clearRealmId();
     realmSettingsPage.saveGeneral();
-    cy.get("#kc-realm-id-helper").should("have.text", "Required field");
+    cy.findByTestId("realm-id-error").should("have.text", "Required field");
   });
 
   it("Modify Display name", () => {
