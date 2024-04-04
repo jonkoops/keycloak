@@ -1,3 +1,5 @@
+import { v4 as uuid } from "uuid";
+
 import CommonPage from "../../../CommonPage";
 import ListingPage from "../../ListingPage";
 import RealmSettingsEventsTab from "./tabs/RealmSettingsEventsTab";
@@ -455,10 +457,13 @@ export default class RealmSettingsPage extends CommonPage {
   }
 
   toggleSwitch(switchName: string, waitFor: boolean | undefined = true) {
-    cy.intercept("/admin/realms/*").as("load");
+    const loadName = `load-${uuid()}`;
+    if (waitFor) {
+      cy.intercept({ path: "/admin/realms/*", times: 1 }).as(loadName);
+    }
     cy.findByTestId(switchName).click({ force: true });
     if (waitFor) {
-      cy.wait("@load");
+      cy.wait(`@${loadName}`);
     }
 
     return this;
