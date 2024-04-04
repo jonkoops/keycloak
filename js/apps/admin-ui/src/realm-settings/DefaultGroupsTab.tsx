@@ -226,6 +226,8 @@ export const DefaultsGroupsTab = () => {
                 <Link
                   className="pf-v5-u-font-weight-light"
                   to={toUserFederation({ realm })}
+                  role="navigation"
+                  aria-label={t("identityBrokeringLink")}
                 />
                 Add groups...
               </Trans>
