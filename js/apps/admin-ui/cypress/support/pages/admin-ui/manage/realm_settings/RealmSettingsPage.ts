@@ -383,7 +383,7 @@ export default class RealmSettingsPage extends CommonPage {
     cy.get(this.#unmanagedAttributes)
       .click()
       .get(".pf-v5-c-select__menu-item")
-      .contains(option)
+      .contains("button", option)
       .click();
   }
 
