@@ -91,7 +91,7 @@ export const PaginatingTableToolbar = ({
       subToolbar={subToolbar}
       toolbarItemFooter={
         count !== 0 ? (
-          <ToolbarItem>
+          <ToolbarItem variant="pagination">
             <KeycloakPagination count={count} variant="bottom" {...rest} />
           </ToolbarItem>
         ) : null
