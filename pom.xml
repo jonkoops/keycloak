@@ -192,7 +192,7 @@
         <maven.plugins.version>3.11.0</maven.plugins.version>
         <replacer.plugin.version>1.4.1</replacer.plugin.version>
         <jboss.as.plugin.version>7.5.Final</jboss.as.plugin.version>
-        <jmeter.plugin.version>1.9.0</jmeter.plugin.version>
+        <jmeter.plugin.version>1.10.1</jmeter.plugin.version>
         <jmeter.analysis.plugin.version>1.0.4</jmeter.analysis.plugin.version>
         <osgi.bundle.plugin.version>5.1.8</osgi.bundle.plugin.version>
         <wildfly.plugin.version>2.0.1.Final</wildfly.plugin.version>
