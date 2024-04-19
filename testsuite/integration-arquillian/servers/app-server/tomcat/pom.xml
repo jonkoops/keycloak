@@ -36,7 +36,7 @@
         <tomcat.resteasy.version>${resteasy.version}</tomcat.resteasy.version>
         <skip.dependencies.for.tomcat>false</skip.dependencies.for.tomcat>
 
-        <tomcat.reactive-streams.version>1.0.2</tomcat.reactive-streams.version>
+        <tomcat.reactive-streams.version>1.0.4</tomcat.reactive-streams.version>
         <tomcat.javax.json.bind-api.version>1.0</tomcat.javax.json.bind-api.version>
         <tomcat.validation-api.version>1.0.0.GA</tomcat.validation-api.version>
     </properties>
