@@ -177,7 +177,7 @@
 
         <!-- Test -->
         <greenmail.version>2.1.0-alpha-1</greenmail.version>
-        <jmeter.version>2.10</jmeter.version>
+        <jmeter.version>2.13</jmeter.version>
         <junit.version>4.13.2</junit.version>
         <picketlink.version>2.7.0.Final</picketlink.version>
         <selenium.version>2.35.0</selenium.version>
