@@ -117,7 +117,7 @@
         <slf4j.version>2.0.6</slf4j.version>
         <sun.istack.version>3.0.10</sun.istack.version>
         <sun.saaj.version>2.0.1</sun.saaj.version>
-        <sun.xml.bind.version>2.3.3-b02</sun.xml.bind.version>
+        <sun.xml.bind.version>2.3.9</sun.xml.bind.version>
         <sun.xml.ws.version>4.0.0</sun.xml.ws.version>
         <sun.activation.version>1.2.2</sun.activation.version>
         <org.glassfish.jaxb.xsom.version>2.3.3-b02</org.glassfish.jaxb.xsom.version>
