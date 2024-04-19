@@ -192,7 +192,7 @@
                     <dependency>
                         <groupId>org.jboss</groupId>
                         <artifactId>jandex</artifactId>
-                        <version>1.0.3.Final</version>
+                        <version>1.2.4.Final</version>
                     </dependency>
                     <dependency>
                         <groupId>ant-contrib</groupId>
