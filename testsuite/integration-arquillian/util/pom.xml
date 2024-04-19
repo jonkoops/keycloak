@@ -77,7 +77,7 @@
             <!-- Ability to compile/run jsp on undertow -->
             <groupId>io.undertow.jastow</groupId>
             <artifactId>jastow</artifactId>
-            <version>2.2.5.Final</version>
+            <version>2.2.7.Final</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
