@@ -37,7 +37,7 @@
     <properties>
         <project.version.npm>999.0.0-SNAPSHOT</project.version.npm>
 
-        <asciidoctor.plugin.version>1.5.8</asciidoctor.plugin.version>
+        <asciidoctor.plugin.version>3.0.0</asciidoctor.plugin.version>
 
         <jboss.repo.nexusUrl>https://s01.oss.sonatype.org/</jboss.repo.nexusUrl>
         <jboss.releases.repo.id>jboss-releases-repository</jboss.releases.repo.id>
