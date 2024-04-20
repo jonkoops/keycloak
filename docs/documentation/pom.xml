@@ -25,7 +25,7 @@
         <version.plugin.dependency>3.0.1</version.plugin.dependency>
         <version.plugin.antrun>1.8</version.plugin.antrun>
         <version.compiler.plugin>3.6.1</version.compiler.plugin>
-        <version.jar.plugin>3.0.2</version.jar.plugin>
+        <version.jar.plugin>3.4.1</version.jar.plugin>
         <version.install.plugin>2.5.2</version.install.plugin>
         <version.surefire.plugin>2.22.2</version.surefire.plugin>
         <version.plexus.utils>4.0.0</version.plexus.utils>
