@@ -189,7 +189,7 @@
         
         <!-- Maven Plugins -->
         <maven.version>3.9.6</maven.version>
-        <maven.plugins.version>3.11.0</maven.plugins.version>
+        <maven.plugins.version>3.13.0</maven.plugins.version>
         <replacer.plugin.version>1.4.1</replacer.plugin.version>
         <jboss.as.plugin.version>7.5.Final</jboss.as.plugin.version>
         <jmeter.plugin.version>1.9.0</jmeter.plugin.version>
