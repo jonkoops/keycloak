@@ -1,0 +1,7 @@
+- server-spi-private/src/main/java/org/keycloak/models/ContentSecurityPolicyBuilder.java
+- services/src/main/java/org/keycloak/protocol/oidc/FrontChannelLogoutHandler.java
+- server-spi-private/src/main/java/org/keycloak/headers/SecurityHeadersProvider.java
+- server-spi-private/src/main/java/org/keycloak/headers/SecurityHeadersProviderFactory.java
+- services/src/main/java/org/keycloak/headers/DefaultSecurityHeadersProvider.java
+- services/src/main/java/org/keycloak/headers/DefaultSecurityHeadersProviderFactory.java
+- server-spi-private/src/main/java/org/keycloak/models/BrowserSecurityHeaders.java
