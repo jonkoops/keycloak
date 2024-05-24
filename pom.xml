@@ -170,7 +170,7 @@
         <mariadb-jdbc.version>3.3.3</mariadb-jdbc.version>
         <mssql.version>2022-latest</mssql.version>
         <!-- this is the mssql driver version also used in the Quarkus BOM -->
-        <mssql-jdbc.version>12.4.2.jre11</mssql-jdbc.version>
+        <mssql-jdbc.version>12.6.2.jre11</mssql-jdbc.version>
         <oracledb.version>19.3</oracledb.version>
         <!-- this is the oracle driver version also used in the Quarkus BOM -->
         <oracle-jdbc.version>23.3.0.23.09</oracle-jdbc.version>
