@@ -1,0 +1,14 @@
+name: Split Weblate Translations
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '**/messages_*.properties'
+jobs:
+  split-weblate-translations:
+    name: Split Weblate Translations
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log Head Repository Full Name
+        run: echo "The pull request was triggered by ${{ toJSON(github.event.pull_request) }}"
