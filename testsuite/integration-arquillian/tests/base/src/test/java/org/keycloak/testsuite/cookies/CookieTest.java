@@ -32,9 +32,11 @@ import org.jboss.arquillian.graphene.page.Page;
 import org.junit.Before;
 import org.junit.Test;
 import org.keycloak.cookie.CookieType;
+import org.keycloak.common.Profile;
 import org.keycloak.models.Constants;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.testsuite.AbstractKeycloakTest;
+import org.keycloak.testsuite.arquillian.annotation.EnableFeature;
 import org.keycloak.testsuite.auth.page.AuthRealm;
 import org.keycloak.testsuite.pages.AppPage;
 import org.keycloak.testsuite.pages.LoginPage;
@@ -64,6 +66,7 @@ import jakarta.ws.rs.core.HttpHeaders;
  * @author hmlnarik
  * @author Vaclav Muzikar <vmuzikar@redhat.com>
  */
+@EnableFeature(Profile.Feature.LEGACY_COOKIES)
 public class CookieTest extends AbstractKeycloakTest {
 
     @Page

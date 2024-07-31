@@ -82,3 +82,23 @@ In the past, regaining access to a {project_name} instance when all admin users 
 It is now possible to run the `start` or `start-dev` commands with specific options to create a temporary admin account. Additionally, a new dedicated command has been introduced, which allows users to regain admin access without hassle.
 
 For detailed instructions and more information on this topic, refer to the link:{bootstrapadminrecovery_link}[{bootstrapadminrecovery_name}] guide.
+
+= Deprecation of 'legacy' cookie behavior
+
+As part of the https://privacysandbox.com/[Privacy Sandbox] effort, Keycloak is making changes to the way cookies are handled. specifically we are preparing for the https://developers.google.com/privacy-sandbox/3pcd/prepare/prepare-for-phaseout[third-party cookie phaseout], and are looking to improve the consistency, privacy and security of how cookies are handled by default within Keycloak.
+
+Since the introduction of the https://web.dev/articles/samesite-cookies-explained[`SameSite`] attribute on cookies provided by Keycloak, another set of 'legacy' cookies (name suffixed in `_LEGACY`) were also introduced in order to support older browsers that were https://www.chromium.org/updates/same-site/incompatible-clients/[not compatible] with this attribute. Since the `SameSite` attribute is now https://caniuse.com/same-site-cookie-attribute[widely supported], this behavior is now deprecated, so that only the cookies using the `SameSite` attribute remain.
+
+You can restore this behavior by configuring the https://www.keycloak.org/server/all-provider-config#_cookie[cookie provider]. For example:
+
+```
+kc.[sh|bat] start --spi-cookie-default-same-site-legacy=true
+```
+
+Or by using an environment variable:
+
+```
+KC_SPI_COOKIE_DEFAULT_SAME_SITE_LEGACY=true kc.[sh|bat] start
+```
+
+This is however considered a temporary workaround, and will be removed in a future release.
