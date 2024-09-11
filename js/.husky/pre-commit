@@ -7,8 +7,8 @@ if [ ! -f "$FILE" ]; then
   exit 0;
 fi
 
-# Exit if dependencies are not installed.
-if [ ! -d "node_modules" ]; then
+# Exit if 'lint-staged' is not installed.
+if [ ! -d "node_modules/lint-staged" ]; then
   exit 0;
 fi
 
