@@ -1729,6 +1729,51 @@ function Keycloak (config) {
 
 export default Keycloak;
 
+
+/**
+ * Checks if 3rd-party cookies are supported by embedding an iframe from the server.
+ * Returns a Promise that resolves to a boolean indicating if 3rd-party cookies are supported.
+ * @returns {Promise<boolean>}
+ */
+function check3pCookiesSupported() {
+  const { resolve, promise } = Promise.withResolvers();
+
+  // Create an iframe to check if 3rd-party cookies are supported.
+  const iframe = document.createElement("iframe");
+
+  iframe.setAttribute("src", kc.endpoints.thirdPartyCookiesIframe());
+  iframe.setAttribute("sandbox", "allow-storage-access-by-user-activation allow-scripts allow-same-origin");
+  iframe.setAttribute("title", "keycloak-3p-check-iframe");
+  iframe.style.display = "none";
+
+  document.body.appendChild(iframe);
+
+  // Listen for messages from the iframe.
+  window.addEventListener("message", messageCallback);
+
+  /** @param {MessageEvent} event */
+  function messageCallback(event) {
+    // Ignore messages that are not from the iframe.
+    if (iframe.contentWindow !== event.source) {
+      return;
+    }
+
+    // Ignore messages that are not known types.
+    if (event.data !== "supported" && event.data !== "unsupported") {
+      return;
+    }
+
+    // Clean up the iframe and event listener.
+    document.body.removeChild(iframe);
+    window.removeEventListener("message", messageCallback);
+
+    // Resolve the promise.
+    resolve(event.data === "supported");
+  }
+
+  return promise;
+}
+
 /**
  * Checks if the DOM is ready to be manipulated, and returns a Promise that resolves when it is.
  * @returns {Promise<void>}
