@@ -20,14 +20,6 @@ Since this project relies greatly on [PNPM workspaces](https://pnpm.io/workspace
 
 ## Code-style
 
-### Linting
-
-To ensure code-style is consistent between various contributions [ESLint](https://eslint.org/) is used to enforce a common set of guidelines. The [recommended rules](https://eslint.org/docs/latest/rules/) of ESLint are used as a foundation.
-
-For TypeScript code-style the recommendations of [`typescript-eslint`](https://typescript-eslint.io/) are adhered to as much as possible, specifically the [`strict-type-checked`](https://typescript-eslint.io/users/configs#strict-type-checked) and [`stylistic-type-checked`](https://typescript-eslint.io/users/configs#stylistic-type-checked) configurations.
-
-Deviations from, or additions to these rules should be documented by comments in the [ESLint configuration](.eslintrc.cjs).
-
 ### Non-null assertion operator
 
 The [non-null assertion operator](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-0.html#non-null-assertion-operator) (`!`) is sometimes used to tell the TypeScript compiler that it is guaranteed that a value is not `null` or `undefined`. Because this might possibly introduce errors at run-time it should be used sparingly.

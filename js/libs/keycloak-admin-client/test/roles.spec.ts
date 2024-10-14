@@ -1,4 +1,3 @@
-// tslint:disable:no-unused-expression
 import * as chai from "chai";
 import { KeycloakAdminClient } from "../src/client.js";
 import type ClientRepresentation from "../src/defs/clientRepresentation.js";
@@ -150,7 +149,6 @@ describe("Roles", () => {
       });
 
       // attributes on the composite role are empty and when fetched not there.
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { attributes, ...rest } = compositeRole;
       expect(children).to.be.eql([rest]);
     });

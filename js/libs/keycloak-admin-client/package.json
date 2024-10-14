@@ -16,7 +16,6 @@
   },
   "scripts": {
     "build": "wireit",
-    "lint": "wireit",
     "test": "wireit",
     "prepublishOnly": "pnpm build"
   },
@@ -31,9 +30,6 @@
       "output": [
         "lib/**"
       ]
-    },
-    "lint": {
-      "command": "eslint ."
     },
     "test": {
       "command": "TS_NODE_PROJECT=tsconfig.test.json mocha --recursive \"test/**/*.spec.ts\" --timeout 10000"

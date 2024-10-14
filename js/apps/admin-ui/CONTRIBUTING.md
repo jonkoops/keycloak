@@ -38,14 +38,6 @@ You can now start making changes to the source code, and they will be reflected 
 
 If you want to build the application using Maven and produce a JAR that can be installed directly into Keycloak, check out the [Keycloak theme documentation](../../keycloak-theme/README.md).
 
-## Linting
-
-Every time you create a commit it should be automatically linted and formatted for you. It is also possible to trigger the linting manually:
-
-```bash
-pnpm lint
-```
-
 ## Integration testing with Cypress
 
 This repository contains integration tests developed with the [Cypress framework](https://www.cypress.io/).

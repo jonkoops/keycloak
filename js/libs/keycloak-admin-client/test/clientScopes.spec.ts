@@ -1,4 +1,3 @@
-// tslint:disable:no-unused-expression
 import * as chai from "chai";
 import { KeycloakAdminClient } from "../src/client.js";
 import type ClientRepresentation from "../src/defs/clientRepresentation.js";

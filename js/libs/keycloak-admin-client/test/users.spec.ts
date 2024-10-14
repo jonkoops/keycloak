@@ -1,4 +1,3 @@
-// tslint:disable:no-unused-expression
 import { faker } from "@faker-js/faker";
 import { fail } from "assert";
 import * as chai from "chai";

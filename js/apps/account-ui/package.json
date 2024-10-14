@@ -20,7 +20,6 @@
     "dev": "wireit",
     "build": "wireit",
     "preview": "wireit",
-    "lint": "wireit",
     "test": "wireit"
   },
   "dependencies": {
@@ -68,13 +67,6 @@
     },
     "build": {
       "command": "vite build",
-      "dependencies": [
-        "../../libs/ui-shared:build",
-        "../../libs/keycloak-admin-client:build"
-      ]
-    },
-    "lint": {
-      "command": "eslint .",
       "dependencies": [
         "../../libs/ui-shared:build",
         "../../libs/keycloak-admin-client:build"

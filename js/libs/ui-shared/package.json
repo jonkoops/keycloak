@@ -17,8 +17,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "wireit",
-    "lint": "wireit"
+    "build": "wireit"
   },
   "wireit": {
     "build": {
@@ -34,12 +33,6 @@
       ],
       "output": [
         "dist/**"
-      ]
-    },
-    "lint": {
-      "command": "eslint .",
-      "dependencies": [
-        "../keycloak-admin-client:build"
       ]
     }
   },

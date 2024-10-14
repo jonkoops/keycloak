@@ -50,7 +50,6 @@ export const MapComponent = ({
     setValue(
       fieldName,
       JSON.stringify(
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         val.filter((e) => e.key !== "").map(({ id, ...entry }) => entry),
       ),
     );

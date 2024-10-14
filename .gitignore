@@ -98,9 +98,6 @@ dist
 !/quarkus/dist
 !/quarkus/**/src/**/dist
 
-# ESLint
-.eslintcache
-
 # NPM
 node_modules
 
