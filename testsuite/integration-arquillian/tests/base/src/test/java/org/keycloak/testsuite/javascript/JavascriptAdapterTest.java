@@ -134,6 +134,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
         assertCurrentUrlStartsWith(testAppUrl, jsDriver);
     }
 
+    // Done, skipped the invalid password checks, as this is an implementation detail of the login.
+    // See: login.spec.ts - logs in and out
     @Test
     public void testJSConsoleAuth() {
         testExecutor.init(defaultArguments(), this::assertInitNotAuth)
@@ -148,6 +150,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
                 .init(defaultArguments(), this::assertInitNotAuth);
     }
 
+    // Done, this test was useless, as PKCE is enabled by default, added a test to check without PKCE instead.
+    // See: login.spec.ts - logs in and out without PKCE
     @Test
     public void testLoginWithPkceS256() {
         JSObjectBuilder pkceS256 = defaultArguments().pkceS256();
@@ -159,6 +163,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
                 .init(pkceS256, this::assertInitNotAuth);
     }
 
+    // Skipped, this test is useless, the standard login test already covers this.
+    // See: login.spec.ts - logs in and out
     @Test
     public void testLogoutWithDefaults() {
         boolean stillLoggedIn = testExecutor.init(defaultArguments(), this::assertInitNotAuth)
@@ -170,6 +176,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
         assertFalse("still logged in", stillLoggedIn);
     }
 
+    // Done.
+    // See: login.spec.ts - logs in and out with 'POST' logout configured at initialization
     @Test
     public void testLogoutWithInitOptionsPostMethod() {
         boolean stillLoggedIn = testExecutor.init(defaultArguments(), this::assertInitNotAuth)
@@ -181,6 +189,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
         assertFalse("still logged in", stillLoggedIn);
     }
 
+    // Done.
+    // See: login.spec.ts - logs in and out with 'POST' logout configured at logout
     @Test
     public void testLogoutWithOptionsPostMethod() {
         boolean stillLoggedIn = testExecutor.init(defaultArguments(), this::assertInitNotAuth)
@@ -192,6 +202,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
         assertFalse("still logged in", stillLoggedIn);
     }
 
+    // Done.
+    // See: login.spec.ts - logs in with a silent SSO redirect
     @Test
     public void testSilentCheckSso() {
         JSObjectBuilder checkSSO = defaultArguments().checkSSOOnLoad()
@@ -208,6 +220,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
                         , this::assertInitAuth, SuiteContext.BROWSER_STRICT_COOKIES);
     }
 
+    // Done.
+    // See: login.spec.ts - logs in with a silent SSO redirect and login iframe disabled
     @Test
     public void testSilentCheckSsoLoginWithLoginIframeDisabled() {
         JSObjectBuilder checkSSO = defaultArguments().checkSSOOnLoad()
@@ -223,6 +237,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
                         , this::assertInitAuth, SuiteContext.BROWSER_STRICT_COOKIES);
     }
 
+    // Done.
+    // See: login.spec.ts - logs in with a silent SSO redirect and fallback disabled
     @Test
     public void testSilentCheckSsoWithFallbackDisabled() {
         JSObjectBuilder checkSSO = defaultArguments().checkSSOOnLoad().disableSilentCheckSSOFallback()
@@ -238,6 +254,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
                         , SuiteContext.BROWSER_STRICT_COOKIES ? this::assertInitNotAuth : this::assertInitAuth);
     }
 
+    // Done.
+    // See: login.spec.ts - logs in and out without initialization options
     @Test
     public void testInitNoOptions() {
         testExecutor.init(null, this::assertInitNotAuth)
@@ -248,6 +266,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
                 .init(null, this::assertInitNotAuth);
     }
 
+    // Done.
+    // See: login.spec.ts - logs in with a silent SSO redirect without an iframe configured
     @Test
     public void testCheckSso() {
         JSObjectBuilder checkSSO = defaultArguments().checkSSOOnLoad();
@@ -262,6 +282,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
                 .init(checkSSO, this::assertInitAuth, true);
     }
 
+    // Skipped, this test is duplicated.
+    // See: login.spec.ts - logs in with a silent SSO redirect and login iframe disabled
     @Test
     public void testSilentCheckSsoNotAuthenticated() {
         JSObjectBuilder checkSSO = defaultArguments().checkSSOOnLoad()
@@ -272,6 +294,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
                 , this::assertInitNotAuth, SuiteContext.BROWSER_STRICT_COOKIES);
     }
 
+    // Done.
+    // See: login.spec.ts - logs in and checks session status
     @Test
     // KEYCLOAK-13206
     public void testIframeInit() {
