@@ -134,6 +134,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
         assertCurrentUrlStartsWith(testAppUrl, jsDriver);
     }
 
+    // Done, skipped the invalid password checks, as this is an implementation detail of the login.
+    // See: login.spec.ts - logs in and out
     @Test
     public void testJSConsoleAuth() {
         testExecutor.init(defaultArguments(), this::assertInitNotAuth)
@@ -148,6 +150,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
                 .init(defaultArguments(), this::assertInitNotAuth);
     }
 
+    // Done, this test was useless, as PKCE is enabled by default, added a test to check without PKCE instead.
+    // See: login.spec.ts - logs in and out without PKCE
     @Test
     public void testLoginWithPkceS256() {
         JSObjectBuilder pkceS256 = defaultArguments().pkceS256();
@@ -159,6 +163,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
                 .init(pkceS256, this::assertInitNotAuth);
     }
 
+    // Skipped, this test is useless, the standard login test already covers this.
+    // See: login.spec.ts - logs in and out
     @Test
     public void testLogoutWithDefaults() {
         boolean stillLoggedIn = testExecutor.init(defaultArguments(), this::assertInitNotAuth)
@@ -170,6 +176,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
         assertFalse("still logged in", stillLoggedIn);
     }
 
+    // Done.
+    // See: login.spec.ts - logs in and out with 'POST' logout configured at initialization
     @Test
     public void testLogoutWithInitOptionsPostMethod() {
         boolean stillLoggedIn = testExecutor.init(defaultArguments(), this::assertInitNotAuth)
@@ -181,6 +189,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
         assertFalse("still logged in", stillLoggedIn);
     }
 
+    // Done.
+    // See: login.spec.ts - logs in and out with 'POST' logout configured at logout
     @Test
     public void testLogoutWithOptionsPostMethod() {
         boolean stillLoggedIn = testExecutor.init(defaultArguments(), this::assertInitNotAuth)
@@ -192,6 +202,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
         assertFalse("still logged in", stillLoggedIn);
     }
 
+    // Done.
+    // See: login.spec.ts - logs in with a silent SSO redirect
     @Test
     public void testSilentCheckSso() {
         JSObjectBuilder checkSSO = defaultArguments().checkSSOOnLoad()
@@ -208,6 +220,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
                         , this::assertInitAuth, SuiteContext.BROWSER_STRICT_COOKIES);
     }
 
+    // Done.
+    // See: login.spec.ts - logs in with a silent SSO redirect and login iframe disabled
     @Test
     public void testSilentCheckSsoLoginWithLoginIframeDisabled() {
         JSObjectBuilder checkSSO = defaultArguments().checkSSOOnLoad()
@@ -223,6 +237,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
                         , this::assertInitAuth, SuiteContext.BROWSER_STRICT_COOKIES);
     }
 
+    // Done.
+    // See: login.spec.ts - logs in with a silent SSO redirect and fallback disabled
     @Test
     public void testSilentCheckSsoWithFallbackDisabled() {
         JSObjectBuilder checkSSO = defaultArguments().checkSSOOnLoad().disableSilentCheckSSOFallback()
@@ -238,6 +254,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
                         , SuiteContext.BROWSER_STRICT_COOKIES ? this::assertInitNotAuth : this::assertInitAuth);
     }
 
+    // Done.
+    // See: login.spec.ts - logs in and out without initialization options
     @Test
     public void testInitNoOptions() {
         testExecutor.init(null, this::assertInitNotAuth)
@@ -248,6 +266,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
                 .init(null, this::assertInitNotAuth);
     }
 
+    // Done.
+    // See: login.spec.ts - logs in with a silent SSO redirect without an iframe configured
     @Test
     public void testCheckSso() {
         JSObjectBuilder checkSSO = defaultArguments().checkSSOOnLoad();
@@ -262,6 +282,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
                 .init(checkSSO, this::assertInitAuth, true);
     }
 
+    // Skipped, this test is duplicated.
+    // See: login.spec.ts - logs in with a silent SSO redirect and login iframe disabled
     @Test
     public void testSilentCheckSsoNotAuthenticated() {
         JSObjectBuilder checkSSO = defaultArguments().checkSSOOnLoad()
@@ -272,6 +294,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
                 , this::assertInitNotAuth, SuiteContext.BROWSER_STRICT_COOKIES);
     }
 
+    // Done.
+    // See: login.spec.ts - logs in and checks session status
     @Test
     // KEYCLOAK-13206
     public void testIframeInit() {
@@ -294,6 +318,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
                 });
     }
 
+    // Done.
+    // See: token.spec.ts - refreshes a token
     @Test
     public void testRefreshToken() {
         testExecutor.init(defaultArguments(), this::assertInitNotAuth)
@@ -304,6 +330,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
                 .refreshToken(9999, assertEventsContains("Auth Refresh Success"));
     }
 
+    // Done.
+    // See: token.spec.ts - refreshes a token only if outside of expiry
     @Test
     public void testRefreshTokenIfUnder30s() {
         testExecutor.init(defaultArguments(), this::assertInitNotAuth)
@@ -315,6 +343,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
                 .refreshToken(30, assertEventsContains("Auth Refresh Success"));
     }
 
+    // Done.
+    // See: other.spec.ts - loads the user profile
     @Test
     public void testGetProfile() {
         testExecutor.init(defaultArguments(), this::assertInitNotAuth)
@@ -325,6 +355,7 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
                 .getProfile((driver1, output, events) -> assertThat((Map<String, String>) output, hasEntry("username", testUser.getUsername())));
     }
 
+    // Skipped, this tests an implementation detail of the Keycloak server, not the adapter.
     @Test
     public void grantBrowserBasedApp() {
         ClientResource clientResource = ApiUtil.findClientResourceByClientId(adminClient.realm(REALM_NAME), CLIENT_ID);
@@ -368,6 +399,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
         }
     }
 
+    // Done.
+    // See: implicit-flow.spec.ts - logs in with an implicit flow
     @Test
     public void implicitFlowTest() {
         testExecutor.init(defaultArguments().implicitFlow(), this::assertInitNotAuth)
@@ -389,6 +422,7 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
 
     }
 
+    // Skipped, this tests an implementation detail of the Keycloak server, not the adapter.
     @Test
     public void testCertEndpoint() {
         testExecutor.logInAndInit(defaultArguments(), testUser, this::assertInitAuth)
@@ -400,6 +434,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
                         assertResponseStatus(200));
     }
 
+    // Done.
+    // See: implicit-flow.spec.ts - does not allow query response mode with an implicit flow
     @Test
     public void implicitFlowQueryTest() {
         setImplicitFlowForClient();
@@ -410,6 +446,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
                 );
     }
 
+    // Done.
+    // See: implicit-flow.spec.ts - fails refreshing a token for an implicit flow
     @Test
     public void implicitFlowRefreshTokenTest() {
         setImplicitFlowForClient();
@@ -417,6 +455,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
             .refreshToken(9999, assertOutputContains("Failed to refresh token"));
     }
 
+    // Done.
+    // See: implicit-flow.spec.ts - expires the access token with an implicit flow
     @Test
     public void implicitFlowOnTokenExpireTest() {
         try (RealmAttributeUpdater rau = new RealmAttributeUpdater(adminClient.realms().realm(REALM_NAME))
@@ -438,6 +478,7 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
         }
     }
 
+    // Skipped, this is an implementation detail of the server, not the adapter.
     @Test
     public void implicitFlowCertEndpoint() {
         setImplicitFlowForClient();
@@ -450,6 +491,7 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
                         assertResponseStatus(200));
     }
 
+    // Skipped, tests an implementation detail of the server, not the client.
     @Test
     public void testBearerRequest() {
         XMLHttpRequest request = XMLHttpRequest.create()
@@ -470,6 +512,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
                 .sendXMLHttpRequest(request, assertResponseStatus(200));
     }
 
+    // Done.
+    // See: login.spec.ts - logs in and out with onLoad set to 'login-required'
     @Test
     public void loginRequiredAction() {
         try {
@@ -486,6 +530,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
                 .init(defaultArguments(), this::assertInitAuth);
     }
 
+    // Done.
+    // See: scope.spec.ts - logs in and obtains scopes passed in during initialization
     /**
      * Test for scope handling via {@code initOptions}: <pre>{@code
      * Keycloak keycloak = new Keycloak(); keycloak.init({.... scope: "profile email phone"})
@@ -515,6 +561,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
                     .executeScript("return window.keycloak.tokenParsed.scope", assertOutputContains("phone"));
     }
 
+    // Done.
+    // See: scope.spec.ts - logs in and obtains scopes passed in during login
     /**
      * Test for scope handling via {@code loginOptions}: <pre>{@code
      * Keycloak keycloak = new Keycloak(); keycloak.login({.... scope: "profile email phone"})
@@ -533,6 +581,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
         });
     }
 
+    // Done.
+    // See: claims.spec.ts - adds the claims to the login url
     /**
      * Test for acr handling via {@code loginOptions}: <pre>{@code
      * Keycloak keycloak = new Keycloak(); keycloak.login({.... acr: { values: ["foo", "bar"], essential: false}})
@@ -579,6 +629,8 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
         });
     }
 
+    // Done.
+    // See: claims.spec.ts - adds the acr values directly to the login url
     /**
      * Test for {@code acr_values} handling via {@code loginOptions}: <pre>{@code
      * Keycloak keycloak = new Keycloak(); keycloak.login({...., acrValues: "1"})
@@ -618,6 +670,7 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
         });
     }
 
+    // Skipped, this is already covered by another test, as well as this again testing server implementation details.
     @Test
     public void testUpdateToken() {
         XMLHttpRequest request = XMLHttpRequest.create()
@@ -639,6 +692,7 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
                 .sendXMLHttpRequest(request, assertResponseStatus(200));
     }
 
+    // Skipped, cannot change server time skew remotely.
     @Test
     public void timeSkewTest() {
         testExecutor.logInAndInit(defaultArguments(), testUser, this::assertInitAuth)
@@ -660,6 +714,7 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
                 ));
     }
 
+    // Skipped, already tested.
     @Test
     public void testOneSecondTimeSkewTokenUpdate() {
         setTimeOffset(1);
@@ -678,6 +733,7 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
         }
     }
 
+    // Skipped, tests server implementation details.
     @Test
     public void testLocationHeaderInResponse() {
         XMLHttpRequest request = XMLHttpRequest.create()
@@ -697,6 +753,7 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
                         });
     }
 
+    // Skipped, tests server implementation details.
     @Test
     public void equalsSignInRedirectUrl() {
         testAppUrl = authServerContextRootPage.toString().replace(AUTH_SERVER_HOST, JS_APP_HOST) + JAVASCRIPT_URL + "/index.html?test=bla=bla&super=man";
@@ -713,6 +770,7 @@ public class JavascriptAdapterTest extends AbstractJavascriptTest {
                 });
     }
 
+    // Skipped, tests server implementation details.
     @Test
     public void spaceInRealmNameTest() {
         try {
