@@ -206,7 +206,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       WORKSPACE: "@keycloak/keycloak-admin-ui"
-      RETRY_COUNT: 3
     strategy:
       matrix:
         browser: [chromium, firefox]
