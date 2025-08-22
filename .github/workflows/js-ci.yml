@@ -210,9 +210,6 @@ jobs:
     strategy:
       matrix:
         browser: [chromium, firefox]
-        exclude:
-          # Only test with Firefox on scheduled runs
-          - browser: ${{ github.event_name != 'workflow_dispatch' && 'firefox' || '' }}
       fail-fast: false
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
