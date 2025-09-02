@@ -7,6 +7,7 @@ import {
   fillAttributeData,
   goToAttributesTab,
 } from "../utils/attributes.ts";
+import { DEFAULT_REALM } from "../utils/constants.ts";
 import { selectItem } from "../utils/form.ts";
 import { login } from "../utils/login.ts";
 import { assertNotificationMessage } from "../utils/masthead.ts";
@@ -82,7 +83,7 @@ test.describe.serial("User creation", () => {
       "You are logged in as a temporary admin user.",
     );
 
-    await goToRealm(page, "master");
+    await goToRealm(page, DEFAULT_REALM);
     await goToUsers(page);
     await searchItem(page, "Search", "admin");
     await assertRowExists(page, "admin");
