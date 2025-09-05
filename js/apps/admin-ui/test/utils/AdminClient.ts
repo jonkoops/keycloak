@@ -43,7 +43,7 @@ class AdminClient {
 
   async createRealm(realm: string, payload?: RealmRepresentation) {
     await this.#login();
-    await this.#client.realms.create({ realm, ...payload });
+    return await this.#client.realms.create({ realm, ...payload });
   }
 
   async updateRealm(realm: string, payload: RealmRepresentation) {

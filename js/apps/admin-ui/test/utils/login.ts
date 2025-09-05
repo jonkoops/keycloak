@@ -6,7 +6,7 @@ import {
   DEFAULT_REALM,
   SERVER_URL,
   ROOT_PATH,
-} from "./constants";
+} from "./constants.ts";
 
 export const login = async (
   page: Page,
@@ -22,7 +22,7 @@ export const login = async (
   await page.getByRole("button", { name: "Sign In" }).click();
 };
 
-export const logout = async (page: Page, username: string = "admin") => {
+export const logout = async (page: Page, username = ADMIN_USER) => {
   await page.getByRole("button", { name: username, exact: true }).click();
   await page.getByRole("menuitem", { name: "Sign out" }).click();
 };

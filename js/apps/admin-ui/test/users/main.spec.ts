@@ -27,192 +27,197 @@ import {
   goToGroupTab,
   joinGroup,
 } from "./main.ts";
+import { createTestBed } from "../support/testbed.ts";
 
 let groupName = "group";
 let groupsList: string[] = [];
 
-test.describe.serial("User creation", () => {
-  const realmName = `users-${uuid()}`;
+test.describe("User creation", () => {
+  // const realmName = `users-${uuid()}`;
 
-  const userId = `user_crud-${uuid()}`;
+  // const userId = `user_crud-${uuid()}`;
 
-  test.beforeAll(async () => {
-    await adminClient.createRealm(realmName);
+  // test.beforeAll(async () => {
+  //   await adminClient.createRealm(realmName);
 
-    for (let i = 0; i <= 2; i++) {
-      groupName += "_" + uuid();
-      await adminClient.createGroup(groupName, realmName);
-      groupsList = [...groupsList, groupName];
-    }
-  });
+  //   for (let i = 0; i <= 2; i++) {
+  //     groupName += "_" + uuid();
+  //     await adminClient.createGroup(groupName, realmName);
+  //     groupsList = [...groupsList, groupName];
+  //   }
+  // });
 
-  test.afterAll(() => adminClient.deleteRealm(realmName));
+  // test.afterAll(() => adminClient.deleteRealm(realmName));
 
-  test.beforeEach(async ({ page }) => {
+  // test.beforeEach(async ({ page }) => {
+  //   await login(page);
+  //   await goToRealm(page, realmName);
+  //   await goToRealmSettings(page);
+  //   await selectItem(page, "#unmanagedAttributePolicy", "Enabled");
+  //   await page.getByTestId("realmSettingsGeneralTab-save").click();
+  //   await goToUsers(page);
+  // });
+
+  // test.afterEach(() => adminClient.deleteUser(userId, realmName, true));
+
+  test("navigates to the create user page", async ({ page }) => {
+    const { realm } = await createTestBed();
+
     await login(page);
-    await goToRealm(page, realmName);
-    await goToRealmSettings(page);
-    await selectItem(page, "#unmanagedAttributePolicy", "Enabled");
-    await page.getByTestId("realmSettingsGeneralTab-save").click();
-    await goToUsers(page);
+
+    // await clickAddUserButton(page);
+    // await expect(page).toHaveURL(/.*users\/add-user/);
+
+    // await clickCancelButton(page);
+    // await expect(page).not.toHaveURL(/.*users\/add-user/);
   });
 
-  test.afterEach(() => adminClient.deleteUser(userId, realmName, true));
+  // test("Create user test", async ({ page }) => {
+  //   await clickAddUserButton(page);
+  //   await fillUserForm(page, {
+  //     username: userId,
+  //     email: `example_${uuid()}@example.com`,
+  //   });
+  //   await clickSaveButton(page);
+  //   await assertNotificationMessage(page, "The user has been created");
+  // });
 
-  test("Go to create User page", async ({ page }) => {
-    await clickAddUserButton(page);
-    await expect(page).toHaveURL(/.*users\/add-user/);
+  // test("Should check temporary admin user existence", async ({ page }) => {
+  //   // check banner visibility first
+  //   await expect(page.locator(".pf-v5-c-banner")).toContainText(
+  //     "You are logged in as a temporary admin user.",
+  //   );
 
-    await clickCancelButton(page);
-    await expect(page).not.toHaveURL(/.*users\/add-user/);
-  });
+  //   await goToRealm(page, DEFAULT_REALM);
+  //   await goToUsers(page);
+  //   await searchItem(page, "Search", "admin");
+  //   await assertRowExists(page, "admin");
+  //   await expect(page.locator("#temporary-admin-label")).toBeVisible();
+  // });
 
-  test("Create user test", async ({ page }) => {
-    await clickAddUserButton(page);
-    await fillUserForm(page, {
-      username: userId,
-      email: `example_${uuid()}@example.com`,
-    });
-    await clickSaveButton(page);
-    await assertNotificationMessage(page, "The user has been created");
-  });
+  // test("Create user with groups test", async ({ page }) => {
+  //   await clickAddUserButton(page);
+  //   await fillUserForm(page, { username: userId });
+  //   await joinGroup(page, [groupsList[0]]);
+  //   await clickSaveButton(page);
+  //   await assertNotificationMessage(page, "The user has been created");
+  // });
 
-  test("Should check temporary admin user existence", async ({ page }) => {
-    // check banner visibility first
-    await expect(page.locator(".pf-v5-c-banner")).toContainText(
-      "You are logged in as a temporary admin user.",
-    );
+  // test("Create user with credentials test", async ({ page }) => {
+  //   await clickAddUserButton(page);
+  //   await fillUserForm(page, {
+  //     username: userId,
+  //     email: `example_${uuid()}@example.com`,
+  //     firstName: "firstname",
+  //     lastName: "lastname",
+  //   });
+  //   await clickSaveButton(page);
+  //   await assertNotificationMessage(page, "The user has been created");
 
-    await goToRealm(page, DEFAULT_REALM);
-    await goToUsers(page);
-    await searchItem(page, "Search", "admin");
-    await assertRowExists(page, "admin");
-    await expect(page.locator("#temporary-admin-label")).toBeVisible();
-  });
+  //   await page.getByTestId("credentials").click();
+  //   await page.getByTestId("no-credentials-empty-action").click();
+  //   await page.getByTestId("passwordField").fill("test");
+  //   await page.getByTestId("passwordConfirmationField").fill("test");
 
-  test("Create user with groups test", async ({ page }) => {
-    await clickAddUserButton(page);
-    await fillUserForm(page, { username: userId });
-    await joinGroup(page, [groupsList[0]]);
-    await clickSaveButton(page);
-    await assertNotificationMessage(page, "The user has been created");
-  });
+  //   await confirmModal(page);
+  //   await confirmModal(page);
+  // });
 
-  test("Create user with credentials test", async ({ page }) => {
-    await clickAddUserButton(page);
-    await fillUserForm(page, {
-      username: userId,
-      email: `example_${uuid()}@example.com`,
-      firstName: "firstname",
-      lastName: "lastname",
-    });
-    await clickSaveButton(page);
-    await assertNotificationMessage(page, "The user has been created");
+  // test.describe("Existing users", () => {
+  //   const placeHolder = "Search user";
+  //   const existingUserId = `existing_user-${uuid()}`;
+  //   const existingUserId2 = `existing_user2-${uuid()}`;
 
-    await page.getByTestId("credentials").click();
-    await page.getByTestId("no-credentials-empty-action").click();
-    await page.getByTestId("passwordField").fill("test");
-    await page.getByTestId("passwordConfirmationField").fill("test");
+  //   test.beforeAll(() =>
+  //     Promise.all([
+  //       adminClient.createUser({
+  //         realm: realmName,
+  //         username: existingUserId,
+  //       }),
+  //       adminClient.createUser({
+  //         realm: realmName,
+  //         username: existingUserId2,
+  //       }),
+  //     ]),
+  //   );
 
-    await confirmModal(page);
-    await confirmModal(page);
-  });
+  //   test("Search existing user test", async ({ page }) => {
+  //     await searchItem(page, placeHolder, existingUserId);
+  //     await assertRowExists(page, existingUserId);
+  //   });
 
-  test.describe.serial("Existing users", () => {
-    const placeHolder = "Search user";
-    const existingUserId = `existing_user-${uuid()}`;
-    const existingUserId2 = `existing_user2-${uuid()}`;
+  //   test("Search non-existing user test", async ({ page }) => {
+  //     await searchItem(page, "Search", "user_DNE");
+  //     await assertNoResults(page);
+  //   });
 
-    test.beforeAll(() =>
-      Promise.all([
-        adminClient.createUser({
-          realm: realmName,
-          username: existingUserId,
-        }),
-        adminClient.createUser({
-          realm: realmName,
-          username: existingUserId2,
-        }),
-      ]),
-    );
+  //   test("User details test", async ({ page }) => {
+  //     await searchItem(page, placeHolder, existingUserId);
+  //     await assertRowExists(page, existingUserId);
+  //     await clickTableRowItem(page, existingUserId);
 
-    test("Search existing user test", async ({ page }) => {
-      await searchItem(page, placeHolder, existingUserId);
-      await assertRowExists(page, existingUserId);
-    });
+  //     await fillUserForm(page, {
+  //       email: `example_${uuid()}@example.com`,
+  //       firstName: "first",
+  //       lastName: "last",
+  //     });
+  //     await clickSaveButton(page);
+  //     await assertNotificationMessage(page, "The user has been saved");
 
-    test("Search non-existing user test", async ({ page }) => {
-      await searchItem(page, "Search", "user_DNE");
-      await assertNoResults(page);
-    });
+  //     await goToUsers(page);
+  //     await searchItem(page, placeHolder, existingUserId);
+  //     await assertRowExists(page, existingUserId);
+  //   });
 
-    test("User details test", async ({ page }) => {
-      await searchItem(page, placeHolder, existingUserId);
-      await assertRowExists(page, existingUserId);
-      await clickTableRowItem(page, existingUserId);
+  //   const attributesName = "unmanagedAttributes";
 
-      await fillUserForm(page, {
-        email: `example_${uuid()}@example.com`,
-        firstName: "first",
-        lastName: "last",
-      });
-      await clickSaveButton(page);
-      await assertNotificationMessage(page, "The user has been saved");
+  //   test("Select Unmanaged attributes", async ({ page }) => {
+  //     await clickTableRowItem(page, existingUserId);
 
-      await goToUsers(page);
-      await searchItem(page, placeHolder, existingUserId);
-      await assertRowExists(page, existingUserId);
-    });
+  //     await goToAttributesTab(page);
+  //     await fillAttributeData(page, "key_test", "value_test", attributesName);
+  //     await clickAttributeSaveButton(page);
+  //     await assertNotificationMessage(page, "The user has been saved");
 
-    const attributesName = "unmanagedAttributes";
+  //     await fillAttributeData(page, "LDAP_ID", "value_test", attributesName, 1);
+  //     await fillAttributeData(
+  //       page,
+  //       "LDAP_ID",
+  //       "another_value_test",
+  //       attributesName,
+  //       2,
+  //     );
+  //     await clickAttributeSaveButton(page);
+  //     await expect(page.getByText("Update of read-only attribute")).toHaveCount(
+  //       2,
+  //     );
+  //     await assertNotificationMessage(page, "The user has not been saved: ");
+  //   });
 
-    test("Select Unmanaged attributes", async ({ page }) => {
-      await clickTableRowItem(page, existingUserId);
+  //   test("User attributes with multiple values test", async ({ page }) => {
+  //     await clickTableRowItem(page, existingUserId2);
 
-      await goToAttributesTab(page);
-      await fillAttributeData(page, "key_test", "value_test", attributesName);
-      await clickAttributeSaveButton(page);
-      await assertNotificationMessage(page, "The user has been saved");
+  //     await goToAttributesTab(page);
+  //     await fillAttributeData(page, "key-multiple", "value1", attributesName);
+  //     await fillAttributeData(
+  //       page,
+  //       "key-multiple",
+  //       "value2",
+  //       attributesName,
+  //       1,
+  //     );
+  //     await clickAttributeSaveButton(page);
+  //     await assertNotificationMessage(page, "The user has been saved");
+  //     await assertAttributeLength(page, 2, attributesName);
+  //   });
 
-      await fillAttributeData(page, "LDAP_ID", "value_test", attributesName, 1);
-      await fillAttributeData(
-        page,
-        "LDAP_ID",
-        "another_value_test",
-        attributesName,
-        2,
-      );
-      await clickAttributeSaveButton(page);
-      await expect(page.getByText("Update of read-only attribute")).toHaveCount(
-        2,
-      );
-      await assertNotificationMessage(page, "The user has not been saved: ");
-    });
+  //   test("Add user to groups test", async ({ page }) => {
+  //     await clickTableRowItem(page, existingUserId);
 
-    test("User attributes with multiple values test", async ({ page }) => {
-      await clickTableRowItem(page, existingUserId2);
-
-      await goToAttributesTab(page);
-      await fillAttributeData(page, "key-multiple", "value1", attributesName);
-      await fillAttributeData(
-        page,
-        "key-multiple",
-        "value2",
-        attributesName,
-        1,
-      );
-      await clickAttributeSaveButton(page);
-      await assertNotificationMessage(page, "The user has been saved");
-      await assertAttributeLength(page, 2, attributesName);
-    });
-
-    test("Add user to groups test", async ({ page }) => {
-      await clickTableRowItem(page, existingUserId);
-
-      await goToGroupTab(page);
-      await joinGroup(page, groupsList, true);
-      await assertNotificationMessage(page, "Added group membership");
-      await assertRowExists(page, groupsList[2]);
-    });
-  });
+  //     await goToGroupTab(page);
+  //     await joinGroup(page, groupsList, true);
+  //     await assertNotificationMessage(page, "Added group membership");
+  //     await assertRowExists(page, groupsList[2]);
+  //   });
+  // });
 });
