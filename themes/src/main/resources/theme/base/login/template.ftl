@@ -24,11 +24,44 @@
             <link href="${url.resourcesPath}/${style}" rel="stylesheet" />
         </#list>
     </#if>
+    <#-- Register core scripts -->
     <#if properties.scripts?has_content>
         <#list properties.scripts?split(' ') as script>
-            <script src="${url.resourcesPath}/${script}" type="text/javascript"></script>
+            ${registerScript('theme-script-${script?index}', script)}
         </#list>
     </#if>
+    
+    <#-- Register core modules and dependencies -->
+    ${registerScript('rfc4648-importmap', '', 'importmap', 'head')}
+    ${registerScript('menu-button-links', 'js/menu-button-links.js', 'module', 'head')}
+    ${registerScript('auth-checker', 'js/authChecker.js', 'module', 'head')}
+    
+    <#-- Register legacy scripts from theme if any -->
+    <#if scripts??>
+        <#list scripts as script>
+            ${registerScript('legacy-script-${script?index}', script)}
+        </#list>
+    </#if>
+    
+    <#-- Enqueue core scripts -->
+    <#list properties.scripts?split(' ') as script>
+        ${enqueueScript('theme-script-${script?index}')}
+    </#list>
+    ${enqueueScript('rfc4648-importmap')}
+    ${enqueueScript('menu-button-links')}
+    ${enqueueScript('auth-checker')}
+    
+    <#-- Enqueue legacy scripts -->
+    <#if scripts??>
+        <#list scripts as script>
+            ${enqueueScript('legacy-script-${script?index}')}
+        </#list>
+    </#if>
+    
+    <#-- Render head scripts (import maps and modules) -->
+    ${renderScripts('head')}
+    
+    <#-- Custom import map for rfc4648 (kept inline for now) -->
     <script type="importmap">
         {
             "imports": {
@@ -36,19 +69,8 @@
             }
         }
     </script>
-    <script src="${url.resourcesPath}/js/menu-button-links.js" type="module"></script>
-    <#if scripts??>
-        <#list scripts as script>
-            <script src="${script}" type="text/javascript"></script>
-        </#list>
-    </#if>
-    <script type="module">
-        import { startSessionPolling } from "${url.resourcesPath}/js/authChecker.js";
-
-        startSessionPolling(
-            "${url.ssoLoginInOtherTabsUrl?no_esc}"
-        );
-    </script>
+    
+    <#-- Inline click handler (kept inline for now) -->
     <script type="module">
         document.addEventListener("click", (event) => {
             const link = event.target.closest("a[data-once-link]");
@@ -72,6 +94,8 @@
             link.setAttribute("aria-disabled", "true");
         });
     </script>
+    
+    <#-- Auth session check script (conditional, kept inline) -->
     <#if authenticationSession??>
         <script type="module">
             import { checkAuthSession } from "${url.resourcesPath}/js/authChecker.js";
@@ -199,6 +223,9 @@
       <@loginFooter.content/>
     </div>
   </div>
+  
+  <#-- Render footer scripts -->
+  ${renderScripts('footer')}
 </body>
 </html>
 </#macro>

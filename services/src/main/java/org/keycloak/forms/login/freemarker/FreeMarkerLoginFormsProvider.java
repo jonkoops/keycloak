@@ -82,10 +82,14 @@ import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.theme.FreeMarkerException;
 import org.keycloak.theme.Theme;
 import org.keycloak.theme.beans.AdvancedMessageFormatterMethod;
+import org.keycloak.theme.beans.EnqueueScriptMethod;
 import org.keycloak.theme.beans.LocaleBean;
 import org.keycloak.theme.beans.MessageBean;
 import org.keycloak.theme.beans.MessageFormatterMethod;
 import org.keycloak.theme.beans.MessagesPerFieldBean;
+import org.keycloak.theme.beans.RegisterScriptMethod;
+import org.keycloak.theme.beans.RenderScriptsMethod;
+import org.keycloak.theme.scripts.ScriptRegistry;
 import org.keycloak.theme.freemarker.FreeMarkerProvider;
 import org.keycloak.userprofile.UserProfileContext;
 import org.keycloak.utils.MediaType;
@@ -139,6 +143,7 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
     protected UriInfo uriInfo;
 
     protected FreeMarkerProvider freeMarker;
+    protected ScriptRegistry scriptRegistry;
 
     protected UserModel user;
 
@@ -150,6 +155,7 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
     public FreeMarkerLoginFormsProvider(KeycloakSession session) {
         this.session = session;
         this.freeMarker = session.getProvider(FreeMarkerProvider.class);
+        this.scriptRegistry = new ScriptRegistry();
         this.attributes.put("scripts", new LinkedList<>());
         this.realm = session.getContext().getRealm();
         this.client = session.getContext().getClient();
@@ -436,6 +442,16 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
                     && realm.getAttribute("darkMode", true));
         } catch (IOException e) {
             logger.warn("Failed to load properties", e);
+        }
+
+        // Add script registry methods to template
+        try {
+            String resourcesPath = "${url.resourcesPath}";
+            attributes.put("registerScript", new RegisterScriptMethod(scriptRegistry));
+            attributes.put("enqueueScript", new EnqueueScriptMethod(scriptRegistry));
+            attributes.put("renderScripts", new RenderScriptsMethod(scriptRegistry, resourcesPath));
+        } catch (Exception e) {
+            logger.warn("Failed to setup script registry methods", e);
         }
 
         return messagesBundle;
