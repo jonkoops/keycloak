@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
-import { v4 as uuidv4 } from "uuid";
+import { toAuthentication } from "../../src/authentication/routes/Authentication.tsx";
+import { createTestBed } from "../support/testbed.ts";
 import adminClient from "../utils/AdminClient.ts";
 import { assertRequiredFieldError, clickSaveButton } from "../utils/form.ts";
 import { login } from "../utils/login.ts";
@@ -9,7 +10,6 @@ import {
   selectActionToggleItem,
 } from "../utils/masthead.ts";
 import { confirmModal } from "../utils/modal.ts";
-import { goToAuthentication, goToRealm } from "../utils/sidebar.ts";
 import {
   assertEmptyTable,
   clickRowKebabItem,
@@ -39,27 +39,21 @@ import {
   goToWebAuthnTab,
 } from "./flow.ts";
 
-test.describe.serial("Authentication test", () => {
-  const realmName = `authentication-flow-${uuidv4()}`;
+test.describe("Authentication flows", () => {
+  test("searches for a flow", async ({ page }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toAuthentication({ realm: testBed.realm }) });
 
-  test.beforeAll(() => adminClient.createRealm(realmName));
-
-  test.afterAll(() => adminClient.deleteRealm(realmName));
-
-  test.beforeEach(async ({ page }) => {
-    await login(page);
-    await goToRealm(page, realmName);
-    await goToAuthentication(page);
-  });
-
-  test("authentication search flow", async ({ page }) => {
     const itemId = "browser";
     await searchItem(page, "Search for flow", itemId);
     await expect(getRowByCellText(page, itemId)).toBeVisible();
     await expect(getRowByCellText(page, "clients")).toBeHidden();
   });
 
-  test("should create duplicate of existing flow", async ({ page }) => {
+  test("duplicates an existing flow", async ({ page }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toAuthentication({ realm: testBed.realm }) });
+
     await clickRowKebabItem(page, "browser", "Duplicate");
     await fillDuplicateFlowModal(page, "Copy of browser");
 
@@ -67,14 +61,20 @@ test.describe.serial("Authentication test", () => {
     await expect(page.locator('text="Copy of browser"')).toBeVisible();
   });
 
-  test("Should fail duplicate with empty flow name", async ({ page }) => {
+  test("fails to duplicate with empty flow name", async ({ page }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toAuthentication({ realm: testBed.realm }) });
+
     await clickRowKebabItem(page, "Direct grant", "Duplicate");
     await fillDuplicateFlowModal(page, "");
 
     await assertRequiredFieldError(page, "alias");
   });
 
-  test("Should fail duplicate with duplicated name", async ({ page }) => {
+  test("fails to duplicate with duplicated name", async ({ page }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toAuthentication({ realm: testBed.realm }) });
+
     await clickRowKebabItem(page, "Direct grant", "Duplicate");
     await fillDuplicateFlowModal(page, "browser");
 
@@ -87,14 +87,11 @@ test.describe.serial("Authentication test", () => {
   test.describe.serial("Flow details", () => {
     const flowName = "Copy of browser test";
 
-    test.beforeEach(async ({ page }) => {
-      await adminClient.copyFlow("browser", flowName, realmName);
-      await page.getByTestId("refresh").click();
-    });
+    test("adds an execution", async ({ page }) => {
+      await using testBed = await createTestBed();
+      await adminClient.copyFlow("browser", flowName, testBed.realm);
+      await login(page, { to: toAuthentication({ realm: testBed.realm }) });
 
-    test.afterEach(() => adminClient.deleteFlow(flowName, realmName));
-
-    test("Should add a execution", async ({ page }) => {
       await clickTableRowItem(page, flowName);
       await addExecution(
         page,
@@ -106,7 +103,11 @@ test.describe.serial("Authentication test", () => {
       await assertRowExists(page, "Choose User");
     });
 
-    test("should add a condition", async ({ page }) => {
+    test("adds a condition", async ({ page }) => {
+      await using testBed = await createTestBed();
+      await adminClient.copyFlow("browser", flowName, testBed.realm);
+      await login(page, { to: toAuthentication({ realm: testBed.realm }) });
+
       await clickTableRowItem(page, flowName);
 
       await addCondition(
@@ -118,7 +119,11 @@ test.describe.serial("Authentication test", () => {
       await assertNotificationMessage(page, "Flow successfully updated");
     });
 
-    test("Should add a sub-flow", async ({ page }) => {
+    test("adds a sub-flow", async ({ page }) => {
+      await using testBed = await createTestBed();
+      await adminClient.copyFlow("browser", flowName, testBed.realm);
+      await login(page, { to: toAuthentication({ realm: testBed.realm }) });
+
       await clickTableRowItem(page, flowName);
 
       const name = "SubFlow";
@@ -128,7 +133,11 @@ test.describe.serial("Authentication test", () => {
       await assertRowExists(page, name);
     });
 
-    test("Should remove an execution", async ({ page }) => {
+    test("removes an execution", async ({ page }) => {
+      await using testBed = await createTestBed();
+      await adminClient.copyFlow("browser", flowName, testBed.realm);
+      await login(page, { to: toAuthentication({ realm: testBed.realm }) });
+
       await clickTableRowItem(page, flowName);
 
       const name = "Cookie";
@@ -139,25 +148,25 @@ test.describe.serial("Authentication test", () => {
       await assertRowExists(page, "Cookie", false);
     });
 
-    test("Should set as default in action menu", async ({ page }) => {
+    test("sets flow as default via action menu", async ({ page }) => {
+      await using testBed = await createTestBed();
+      await adminClient.copyFlow("browser", flowName, testBed.realm);
+      await login(page, { to: toAuthentication({ realm: testBed.realm }) });
+
       await clickTableRowItem(page, flowName);
       await selectActionToggleItem(page, "Bind flow");
 
-      // set as default
       await fillBindFlowModal(page, "Direct grant flow");
       await clickSaveButton(page);
       await assertNotificationMessage(page, "Flow successfully updated");
       await expect(page.getByText("Default")).toBeVisible();
-
-      // unset as default
-      await goToAuthentication(page);
-      await clickTableRowItem(page, "direct grant");
-      await selectActionToggleItem(page, "Bind flow");
-      await fillBindFlowModal(page, "Direct grant flow");
-      await clickSaveButton(page);
     });
 
-    test("Drag and drop execution", async ({ page }) => {
+    test("drags and drops execution", async ({ page }) => {
+      await using testBed = await createTestBed();
+      await adminClient.copyFlow("browser", flowName, testBed.realm);
+      await login(page, { to: toAuthentication({ realm: testBed.realm }) });
+
       await clickTableRowItem(page, flowName);
       const source = page.getByText("Identity Provider Redirector");
       const target = page.getByText("Kerberos");
@@ -175,7 +184,11 @@ test.describe.serial("Authentication test", () => {
       await assertNotificationMessage(page, "Flow successfully updated");
     });
 
-    test("Should edit flow details", async ({ page }) => {
+    test("edits flow details", async ({ page }) => {
+      await using testBed = await createTestBed();
+      await adminClient.copyFlow("browser", flowName, testBed.realm);
+      await login(page, { to: toAuthentication({ realm: testBed.realm }) });
+
       await clickTableRowItem(page, flowName);
 
       await selectActionToggleItem(page, "Edit info");
@@ -188,20 +201,12 @@ test.describe.serial("Authentication test", () => {
   });
 });
 
-test.describe.serial("Required actions", () => {
-  const realmName = `test-${uuidv4()}`;
-
-  test.beforeAll(() => adminClient.createRealm(realmName));
-  test.afterAll(() => adminClient.deleteRealm(realmName));
-
-  test.beforeEach(async ({ page }) => {
-    await login(page);
-    await goToRealm(page, realmName);
-    await goToAuthentication(page);
+test.describe("Required actions", () => {
+  test("enables delete account action", async ({ page }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toAuthentication({ realm: testBed.realm }) });
     await goToRequiredActions(page);
-  });
 
-  test("should enable delete account", async ({ page }) => {
     const action = "Delete Account";
     await clickSwitchPolicy(page, action);
     await assertNotificationMessage(
@@ -211,7 +216,11 @@ test.describe.serial("Required actions", () => {
     await assertSwitchPolicyChecked(page, action);
   });
 
-  test("should register an unregistered action", async ({ page }) => {
+  test("registers an unregistered action", async ({ page }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toAuthentication({ realm: testBed.realm }) });
+    await goToRequiredActions(page);
+
     const action = "Verify Profile";
     await assertSwitchPolicyChecked(page, action);
     await assertDefaultSwitchPolicyEnabled(page, action);
@@ -229,7 +238,11 @@ test.describe.serial("Required actions", () => {
     await assertDefaultSwitchPolicyEnabled(page, action);
   });
 
-  test("should set action as default", async ({ page }) => {
+  test("sets action as default", async ({ page }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toAuthentication({ realm: testBed.realm }) });
+    await goToRequiredActions(page);
+
     const action = "Configure OTP";
     await clickDefaultSwitchPolicy(page, action);
     await assertNotificationMessage(
@@ -240,20 +253,12 @@ test.describe.serial("Required actions", () => {
   });
 });
 
-test.describe.serial("Password policies tab", () => {
-  const realmName = `policies-password-${uuidv4()}`;
-
-  test.beforeAll(() => adminClient.createRealm(realmName));
-  test.afterAll(() => adminClient.deleteRealm(realmName));
-
-  test.beforeEach(async ({ page }) => {
-    await login(page);
-    await goToRealm(page, realmName);
-    await goToAuthentication(page);
+test.describe("Password policies", () => {
+  test("adds password policy", async ({ page }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toAuthentication({ realm: testBed.realm }) });
     await goToPoliciesTab(page);
-  });
 
-  test("should add password policies", async ({ page }) => {
     await assertEmptyTable(page);
     await addPolicy(page, "Not Recently Used");
     await clickSaveButton(page);
@@ -264,35 +269,32 @@ test.describe.serial("Password policies tab", () => {
   });
 });
 
-test.describe.serial("Accessibility tests for authentication", () => {
-  const realmName = "a11y-realm";
-  const flowName = `Flow-${uuidv4()}`;
+test.describe("Accessibility tests for authentication", () => {
+  test("passes accessibility checks on main page", async ({ page }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toAuthentication({ realm: testBed.realm }) });
 
-  test.beforeAll(() => adminClient.createRealm(realmName));
-  test.afterAll(() => adminClient.deleteRealm(realmName));
-
-  test.beforeEach(async ({ page }) => {
-    await login(page);
-    await goToRealm(page, realmName);
-    await goToAuthentication(page);
-  });
-
-  test("should pass accessibility checks on main page", async ({ page }) => {
     await assertAxeViolations(page);
   });
 
-  test("Check a11y violations on load/ authentication tab/ flows sub tab/ creating flow form", async ({
+  test("passes accessibility checks on creating flow form", async ({
     page,
   }) => {
-    await goToCreateItem(page);
+    await using testBed = await createTestBed();
+    await login(page, { to: toAuthentication({ realm: testBed.realm }) });
 
+    await goToCreateItem(page);
     await assertAxeViolations(page);
     await page.getByTestId("cancel").click();
   });
 
-  test("Check a11y violations on load/ authentication tab/ flows sub tab/ creating flow", async ({
+  test("passes accessibility checks on creating flow with values", async ({
     page,
   }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toAuthentication({ realm: testBed.realm }) });
+
+    const flowName = "Test Flow";
     await goToCreateItem(page);
     await fillCreateForm(
       page,
@@ -303,52 +305,73 @@ test.describe.serial("Accessibility tests for authentication", () => {
     await assertAxeViolations(page);
   });
 
-  test("Check a11y violations on load/ authentication tab/ flows sub tab/ creating", async ({
+  test("passes accessibility checks on flow details page", async ({
     page,
   }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toAuthentication({ realm: testBed.realm }) });
+
     await clickTableRowItem(page, "reset credentials");
     await assertAxeViolations(page);
   });
 
-  test("Check a11y violations on load/ authentication tab/ required actions sub tab", async ({
+  test("passes accessibility checks on required actions sub tab", async ({
     page,
   }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toAuthentication({ realm: testBed.realm }) });
+
     await goToRequiredActions(page);
     await assertAxeViolations(page);
   });
 
-  test("Check a11y violations on load/ policies tab/ password policy sub tab", async ({
+  test("passes accessibility checks on password policy sub tab", async ({
     page,
   }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toAuthentication({ realm: testBed.realm }) });
+
     await goToPoliciesTab(page);
     await assertAxeViolations(page);
   });
 
-  test("Check a11y violations on load/ authentication tab/ policies sub tab/ adding policy", async ({
+  test("passes accessibility checks on adding password policy", async ({
     page,
   }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toAuthentication({ realm: testBed.realm }) });
+
     await goToPoliciesTab(page);
     await addPolicy(page, "Not Recently Used");
     await assertAxeViolations(page);
   });
 
-  test("Check a11y violations on load/ policies tab/ otp policy sub tab", async ({
+  test("passes accessibility checks on OTP policy sub tab", async ({
     page,
   }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toAuthentication({ realm: testBed.realm }) });
+
     await goToOTPPolicyTab(page);
     await assertAxeViolations(page);
   });
 
-  test("Check a11y violations on load/ policies tab/ WebAuthn Policies sub tab", async ({
+  test("passes accessibility checks on WebAuthn policies sub tab", async ({
     page,
   }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toAuthentication({ realm: testBed.realm }) });
+
     await goToWebAuthnTab(page);
     await assertAxeViolations(page);
   });
 
-  test("Check a11y violations on load/ policies tab/ CIBA Policy sub tab", async ({
+  test("passes accessibility checks on CIBA policy sub tab", async ({
     page,
   }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toAuthentication({ realm: testBed.realm }) });
+
     await goToCIBAPolicyTab(page);
     await assertAxeViolations(page);
   });

@@ -1,5 +1,7 @@
 import { test } from "@playwright/test";
 import { v4 as uuid } from "uuid";
+import { toClients } from "../../src/clients/routes/Clients.tsx";
+import { createTestBed } from "../support/testbed.ts";
 import adminClient from "../utils/AdminClient.ts";
 import {
   assertAttributeLength,
@@ -16,7 +18,6 @@ import {
 } from "../utils/masthead.ts";
 import { assertModalTitle, confirmModal } from "../utils/modal.ts";
 import { clickUnassign } from "../utils/roles.ts";
-import { goToClients, goToRealm } from "../utils/sidebar.ts";
 import {
   assertNoResults,
   assertRowExists,
@@ -36,50 +37,22 @@ import {
   goToRolesTab,
 } from "./role.ts";
 
-test.describe.serial("Roles tab test", () => {
-  const realmName = `clients-realm-${uuid()}`;
-  const itemId = `client-crud-${uuid()}`;
-  const updatableItem = `role-name-${uuid()}`;
-  const client = `client-${uuid()}`;
-  const oneRoleClient = `client-one-role-${uuid()}`;
-  const createRealmRoleName = `create-realm-${uuid()}`;
+test.describe("Roles tab test", () => {
   const placeHolder = "Search role by name";
-
-  test.beforeAll(async () => {
-    await adminClient.createRealm(realmName);
-    await adminClient.createClient({
-      clientId: client,
-      protocol: "openid-connect",
-      publicClient: false,
-      realm: realmName,
-    });
-    await adminClient.createRealmRole({
-      name: createRealmRoleName,
-      realm: realmName,
-    });
-    const { id } = await adminClient.createClient({
-      clientId: oneRoleClient,
-      protocol: "openid-connect",
-      publicClient: false,
-      realm: realmName,
-    });
-    await adminClient.createClientRole(id, {
-      name: updatableItem,
-      realm: realmName,
-    });
-  });
-
-  test.beforeEach(async ({ page }) => {
-    await login(page);
-    await goToRealm(page, realmName);
-    await goToClients(page);
-  });
-
-  test.afterAll(() => adminClient.deleteRealm(realmName));
 
   test("should fail to create client role with empty name", async ({
     page,
   }) => {
+    await using testBed = await createTestBed();
+    const client = `client-${uuid()}`;
+    await adminClient.createClient({
+      clientId: client,
+      protocol: "openid-connect",
+      publicClient: false,
+      realm: testBed.realm,
+    });
+
+    await login(page, { to: toClients({ realm: testBed.realm }) });
     await clickTableRowItem(page, client);
     await goToRolesTab(page);
 
@@ -90,6 +63,17 @@ test.describe.serial("Roles tab test", () => {
   });
 
   test("should create client role", async ({ page }) => {
+    await using testBed = await createTestBed();
+    const client = `client-${uuid()}`;
+    const itemId = `client-crud-${uuid()}`;
+    await adminClient.createClient({
+      clientId: client,
+      protocol: "openid-connect",
+      publicClient: false,
+      realm: testBed.realm,
+    });
+
+    await login(page, { to: toClients({ realm: testBed.realm }) });
     await clickTableRowItem(page, client);
     await goToRolesTab(page);
 
@@ -100,6 +84,21 @@ test.describe.serial("Roles tab test", () => {
   });
 
   test("should update client role description", async ({ page }) => {
+    await using testBed = await createTestBed();
+    const oneRoleClient = `client-one-role-${uuid()}`;
+    const updatableItem = `role-name-${uuid()}`;
+    const { id } = await adminClient.createClient({
+      clientId: oneRoleClient,
+      protocol: "openid-connect",
+      publicClient: false,
+      realm: testBed.realm,
+    });
+    await adminClient.createClientRole(id, {
+      name: updatableItem,
+      realm: testBed.realm,
+    });
+
+    await login(page, { to: toClients({ realm: testBed.realm }) });
     await clickTableRowItem(page, oneRoleClient);
     await goToRolesTab(page);
 
@@ -112,6 +111,21 @@ test.describe.serial("Roles tab test", () => {
   });
 
   test("should add and delete attribute to client role", async ({ page }) => {
+    await using testBed = await createTestBed();
+    const oneRoleClient = `client-one-role-${uuid()}`;
+    const updatableItem = `role-name-${uuid()}`;
+    const { id } = await adminClient.createClient({
+      clientId: oneRoleClient,
+      protocol: "openid-connect",
+      publicClient: false,
+      realm: testBed.realm,
+    });
+    await adminClient.createClientRole(id, {
+      name: updatableItem,
+      realm: testBed.realm,
+    });
+
+    await login(page, { to: toClients({ realm: testBed.realm }) });
     await clickTableRowItem(page, oneRoleClient);
     await goToRolesTab(page);
     await clickTableRowItem(page, updatableItem);
@@ -131,6 +145,21 @@ test.describe.serial("Roles tab test", () => {
   });
 
   test("should fail to create duplicate client role", async ({ page }) => {
+    await using testBed = await createTestBed();
+    const oneRoleClient = `client-one-role-${uuid()}`;
+    const updatableItem = `role-name-${uuid()}`;
+    const { id } = await adminClient.createClient({
+      clientId: oneRoleClient,
+      protocol: "openid-connect",
+      publicClient: false,
+      realm: testBed.realm,
+    });
+    await adminClient.createClientRole(id, {
+      name: updatableItem,
+      realm: testBed.realm,
+    });
+
+    await login(page, { to: toClients({ realm: testBed.realm }) });
     await clickTableRowItem(page, oneRoleClient);
     await goToRolesTab(page);
 
@@ -146,6 +175,21 @@ test.describe.serial("Roles tab test", () => {
   test("should search existing and non-existing client role", async ({
     page,
   }) => {
+    await using testBed = await createTestBed();
+    const oneRoleClient = `client-one-role-${uuid()}`;
+    const updatableItem = `role-name-${uuid()}`;
+    const { id } = await adminClient.createClient({
+      clientId: oneRoleClient,
+      protocol: "openid-connect",
+      publicClient: false,
+      realm: testBed.realm,
+    });
+    await adminClient.createClientRole(id, {
+      name: updatableItem,
+      realm: testBed.realm,
+    });
+
+    await login(page, { to: toClients({ realm: testBed.realm }) });
     await clickTableRowItem(page, oneRoleClient);
     await goToRolesTab(page);
 
@@ -164,6 +208,26 @@ test.describe.serial("Roles tab test", () => {
   });
 
   test("should handle associated realm roles", async ({ page }) => {
+    await using testBed = await createTestBed();
+    const oneRoleClient = `client-one-role-${uuid()}`;
+    const updatableItem = `role-name-${uuid()}`;
+    const createRealmRoleName = `create-realm-${uuid()}`;
+    await adminClient.createRealmRole({
+      name: createRealmRoleName,
+      realm: testBed.realm,
+    });
+    const { id } = await adminClient.createClient({
+      clientId: oneRoleClient,
+      protocol: "openid-connect",
+      publicClient: false,
+      realm: testBed.realm,
+    });
+    await adminClient.createClientRole(id, {
+      name: updatableItem,
+      realm: testBed.realm,
+    });
+
+    await login(page, { to: toClients({ realm: testBed.realm }) });
     await clickTableRowItem(page, oneRoleClient);
     await goToRolesTab(page);
     await clickTableRowItem(page, updatableItem);
@@ -181,6 +245,21 @@ test.describe.serial("Roles tab test", () => {
   });
 
   test("should handle associated client roles", async ({ page }) => {
+    await using testBed = await createTestBed();
+    const oneRoleClient = `client-one-role-${uuid()}`;
+    const updatableItem = `role-name-${uuid()}`;
+    const { id } = await adminClient.createClient({
+      clientId: oneRoleClient,
+      protocol: "openid-connect",
+      publicClient: false,
+      realm: testBed.realm,
+    });
+    await adminClient.createClientRole(id, {
+      name: updatableItem,
+      realm: testBed.realm,
+    });
+
+    await login(page, { to: toClients({ realm: testBed.realm }) });
     await clickTableRowItem(page, oneRoleClient);
     await goToRolesTab(page);
     await clickTableRowItem(page, updatableItem);
@@ -192,7 +271,21 @@ test.describe.serial("Roles tab test", () => {
   });
 
   test("should delete client role", async ({ page }) => {
-    // Delete from list
+    await using testBed = await createTestBed();
+    const oneRoleClient = `client-one-role-${uuid()}`;
+    const updatableItem = `role-name-${uuid()}`;
+    const { id } = await adminClient.createClient({
+      clientId: oneRoleClient,
+      protocol: "openid-connect",
+      publicClient: false,
+      realm: testBed.realm,
+    });
+    await adminClient.createClientRole(id, {
+      name: updatableItem,
+      realm: testBed.realm,
+    });
+
+    await login(page, { to: toClients({ realm: testBed.realm }) });
     await clickTableRowItem(page, oneRoleClient);
     await goToRolesTab(page);
 
@@ -204,6 +297,21 @@ test.describe.serial("Roles tab test", () => {
   test.skip("Should delete client role from role details test", async ({
     page,
   }) => {
+    await using testBed = await createTestBed();
+    const oneRoleClient = `client-one-role-${uuid()}`;
+    const updatableItem = `role-name-${uuid()}`;
+    const { id } = await adminClient.createClient({
+      clientId: oneRoleClient,
+      protocol: "openid-connect",
+      publicClient: false,
+      realm: testBed.realm,
+    });
+    await adminClient.createClientRole(id, {
+      name: updatableItem,
+      realm: testBed.realm,
+    });
+
+    await login(page, { to: toClients({ realm: testBed.realm }) });
     await clickTableRowItem(page, oneRoleClient);
     await goToRolesTab(page);
     await clickTableRowItem(page, updatableItem);

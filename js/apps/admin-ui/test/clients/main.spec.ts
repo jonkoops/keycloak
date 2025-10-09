@@ -1,12 +1,13 @@
 import { expect, test } from "@playwright/test";
 import { v4 as uuid } from "uuid";
+import { toClients } from "../../src/clients/routes/Clients.tsx";
+import { createTestBed } from "../support/testbed.ts";
 import adminClient from "../utils/AdminClient.ts";
 import { assertRequiredFieldError } from "../utils/form.ts";
 import { chooseFile } from "../utils/file-chooser.ts";
 import { login } from "../utils/login.ts";
 import { assertNotificationMessage } from "../utils/masthead.ts";
 import { assertModalTitle, confirmModal } from "../utils/modal.ts";
-import { goToClients, goToRealm } from "../utils/sidebar.ts";
 import {
   clearAllFilters,
   clickRowKebabItem,
@@ -21,37 +22,28 @@ import {
   save,
 } from "./utils.ts";
 
-test.describe.serial("Clients test", () => {
-  const realmName = `clients-realm-${uuid()}`;
+test.describe("Clients test", () => {
   const clientId = `clientId`;
   const placeHolder = "Search for client";
 
-  test.beforeAll(async () => {
-    await adminClient.createRealm(realmName);
-  });
-
-  test.afterAll(async () => {
-    await adminClient.deleteRealm(realmName);
-  });
-
-  test.beforeEach(async ({ page }) => {
-    await login(page);
-    await goToRealm(page, realmName);
-    await goToClients(page);
-  });
-
   test("Should test clientId required", async ({ page }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toClients({ realm: testBed.realm }) });
     await createClient(page);
     await assertRequiredFieldError(page, "clientId");
   });
 
   test("Cancel create should return to clients", async ({ page }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toClients({ realm: testBed.realm }) });
     await createClient(page, { clientId }, () => cancel(page));
 
     await expect(page).not.toHaveURL("add-client");
   });
 
   test("Should be able to create a client", async ({ page }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toClients({ realm: testBed.realm }) });
     await createClient(page, {
       clientId: `created-client-${uuid()}`,
       name: "ClientName",
@@ -65,6 +57,8 @@ test.describe.serial("Clients test", () => {
   });
 
   test("Should fail creating client that already exists", async ({ page }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toClients({ realm: testBed.realm }) });
     await createClient(page, {
       clientId: "account",
       name: "${account}",
@@ -80,6 +74,9 @@ test.describe.serial("Clients test", () => {
   });
 
   test("Create client", async ({ page }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toClients({ realm: testBed.realm }) });
+    
     const client = {
       clientId,
       name: "ClientName",
@@ -102,7 +99,10 @@ test.describe.serial("Clients test", () => {
 
     await assertNotificationMessage(page, "Client created successfully");
 
-    await goToClients(page);
+    await page
+      .getByLabel("Breadcrumb")
+      .getByRole("link", { name: "Clients" })
+      .click();
     await clickRowKebabItem(page, clientId, "Delete");
     await assertModalTitle(page, `Delete ${clientId} ?`);
     await confirmModal(page);
@@ -110,6 +110,9 @@ test.describe.serial("Clients test", () => {
   });
 
   test("Search for clients", async ({ page }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toClients({ realm: testBed.realm }) });
+    
     await searchItem(page, placeHolder, "John Doe");
     await expect(
       page.getByRole("heading", { name: "No search results" }),
@@ -119,18 +122,16 @@ test.describe.serial("Clients test", () => {
     await expect(getRowByCellText(page, "account")).toBeVisible();
   });
 
-  test.describe.serial("Clients import", () => {
-    test.beforeAll(() =>
-      adminClient.createClient({
+  test.describe("Clients import", () => {
+    test("Import client", async ({ page }) => {
+      await using testBed = await createTestBed();
+      await adminClient.createClient({
         clientId: "identical",
         protocol: "openid-connect",
-        realm: realmName,
-      }),
-    );
+        realm: testBed.realm,
+      });
 
-    test.afterAll(() => adminClient.deleteClient("identical"));
-
-    test("Import client", async ({ page }) => {
+      await login(page, { to: toClients({ realm: testBed.realm }) });
       await page.getByTestId("importClient").click();
       await chooseFile(page, "../utils/files/import-identical-client.json");
       await save(page);

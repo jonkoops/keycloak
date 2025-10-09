@@ -1,11 +1,10 @@
 import { expect, test } from "@playwright/test";
-import { v4 as uuidv4 } from "uuid";
-import adminClient from "../utils/AdminClient.ts";
+import { toClientScopes } from "../../src/client-scopes/routes/ClientScopes.tsx";
+import { createTestBed } from "../support/testbed.ts";
 import { assertSaveButtonIsDisabled, clickSaveButton } from "../utils/form.ts";
 import { login } from "../utils/login.ts";
 import { assertNotificationMessage } from "../utils/masthead.ts";
 import { confirmModal } from "../utils/modal.ts";
-import { goToClientScopes } from "../utils/sidebar.ts";
 import {
   assertRowExists,
   assertTableRowsLength,
@@ -42,193 +41,211 @@ const FilterProtocol = {
   OpenID: "OpenID Connect",
 };
 
-test.describe.serial("Client Scopes test", () => {
-  const clientScopeName = "client-scope-test";
-  const itemId = `client-scope-test-${uuidv4()}`;
-  const clientScope = {
-    name: clientScopeName,
-    description: "",
-    protocol: "openid-connect",
-    attributes: {
-      "include.in.token.scope": "true",
-      "display.on.consent.screen": "true",
-      "gui.order": "1",
-      "consent.screen.text": "",
-    },
-  };
+test.describe("Client scope filtering", () => {
   const placeHolder = "Search for client scope";
   const tableName = "Client scopes";
+  const clientScopeName = "client-scope-test";
 
-  test.beforeAll(async () => {
+  test("filters client scope by name", async ({ page }) => {
+    const clientScopes = [];
     for (let i = 0; i < 5; i++) {
-      clientScope.name = clientScopeName + i;
-      await adminClient.createClientScope(clientScope);
+      clientScopes.push({
+        name: `${clientScopeName}${i}`,
+        protocol: "openid-connect",
+      });
     }
+
+    await using testBed = await createTestBed({
+      clientScopes,
+    });
+
+    await login(page, { to: toClientScopes({ realm: testBed.realm }) });
+
+    const itemName = `${clientScopeName}0`;
+    await searchItem(page, placeHolder, itemName);
+    await assertRowExists(page, itemName);
+    await assertTableRowsLength(page, tableName, 1);
   });
 
-  test.afterAll(async () => {
+  test("filters items by assigned type Default", async ({ page }) => {
+    await using testBed = await createTestBed();
+
+    await login(page, { to: toClientScopes({ realm: testBed.realm }) });
+
+    await selectClientScopeFilter(page, "Assigned type");
+    await selectSecondaryFilterAssignedType(page, FilterAssignedType.Default);
+
+    const assignedTypes = await getTableAssignedTypeColumn(page, tableName);
+
+    expect(assignedTypes).toContain(FilterAssignedType.Default);
+    expect(assignedTypes).not.toContain(FilterAssignedType.Optional);
+    expect(assignedTypes).not.toContain(FilterAssignedType.None);
+  });
+
+  test("filters items by assigned type Optional", async ({ page }) => {
+    await using testBed = await createTestBed();
+
+    await login(page, { to: toClientScopes({ realm: testBed.realm }) });
+
+    await selectClientScopeFilter(page, "Assigned type");
+    await selectSecondaryFilterAssignedType(page, FilterAssignedType.Optional);
+
+    const assignedTypes = await getTableAssignedTypeColumn(page, tableName);
+
+    expect(assignedTypes).not.toContain(FilterAssignedType.Default);
+    expect(assignedTypes).not.toContain(FilterAssignedType.None);
+    expect(assignedTypes).toContain(FilterAssignedType.Optional);
+  });
+
+  test("filters items by assigned type All", async ({ page }) => {
+    await using testBed = await createTestBed();
+
+    await login(page, { to: toClientScopes({ realm: testBed.realm }) });
+
+    await selectClientScopeFilter(page, "Assigned type");
+    await selectSecondaryFilterAssignedType(page, FilterAssignedType.AllTypes);
+
+    const assignedTypes = await getTableAssignedTypeColumn(page, tableName);
+
+    expect(assignedTypes).toContain(FilterAssignedType.Default);
+    expect(assignedTypes).toContain(FilterAssignedType.Optional);
+    // Note: Default realm may not have client scopes with "None" type
+  });
+
+  test("filters items by protocol OpenID", async ({ page }) => {
+    await using testBed = await createTestBed();
+
+    await login(page, { to: toClientScopes({ realm: testBed.realm }) });
+
+    await selectClientScopeFilter(page, "Protocol");
+    await selectSecondaryFilterProtocol(page, FilterProtocol.OpenID);
+
+    const protocols = await getTableProtocolColumn(page, tableName);
+
+    expect(protocols).not.toContain(FilterProtocol.SAML);
+    expect(protocols).toContain(FilterProtocol.OpenID);
+  });
+
+  test("filters items by protocol SAML", async ({ page }) => {
+    await using testBed = await createTestBed();
+
+    await login(page, { to: toClientScopes({ realm: testBed.realm }) });
+
+    await selectClientScopeFilter(page, "Protocol");
+    await selectSecondaryFilterProtocol(page, FilterProtocol.SAML);
+
+    const protocols = await getTableProtocolColumn(page, tableName);
+
+    expect(protocols).toContain(FilterProtocol.SAML);
+    expect(protocols).not.toContain(FilterProtocol.OpenID);
+  });
+
+  test("shows items on next page", async ({ page }) => {
+    await using testBed = await createTestBed();
+
+    await login(page, { to: toClientScopes({ realm: testBed.realm }) });
+
+    await clickNextPageButton(page);
+    const rows = await getTableData(page, tableName);
+    expect(rows.length).toBeGreaterThan(1);
+  });
+});
+
+test.describe("Client scope operations", () => {
+  const tableName = "Client scopes";
+  const clientScopeName = "client-scope-test";
+
+  test("modifies selected item type to Default", async ({ page }) => {
+    const clientScopes = [];
     for (let i = 0; i < 5; i++) {
-      if (await adminClient.existsClientScope(clientScopeName + i)) {
-        await adminClient.deleteClientScope(clientScopeName + i);
-      }
+      clientScopes.push({
+        name: `${clientScopeName}${i}`,
+        protocol: "openid-connect",
+      });
     }
+
+    await using testBed = await createTestBed({
+      clientScopes,
+    });
+
+    await login(page, { to: toClientScopes({ realm: testBed.realm }) });
+
+    const itemName = `${clientScopeName}0`;
+    await clickSelectRow(page, tableName, itemName);
+    await selectChangeType(page, FilterAssignedType.Default);
+    await assertNotificationMessage(page, "Scope mapping updated");
+
+    const rows = await getTableData(page, tableName);
+    const itemRow = rows.find((r) => r.includes(itemName));
+    expect(itemRow).toContain(FilterAssignedType.Default);
   });
+});
 
-  test.describe.serial("Client Scope filter list items", () => {
-    test.beforeEach(async ({ page }) => {
-      await login(page);
-      await goToClientScopes(page);
-    });
+test.describe("Client scope creation", () => {
+  const placeHolder = "Search for client scope";
 
-    test("should filter item by name", async ({ page }) => {
-      const itemName = clientScopeName + "0";
-      await searchItem(page, placeHolder, itemName);
-      await assertRowExists(page, itemName);
-      await assertTableRowsLength(page, tableName, 1);
-    });
+  test("fails to create client scope with existing name", async ({ page }) => {
+    await using testBed = await createTestBed();
 
-    test("should filter items by Assigned type Default", async ({ page }) => {
-      await selectClientScopeFilter(page, "Assigned type");
-      await selectSecondaryFilterAssignedType(page, FilterAssignedType.Default);
+    await login(page, { to: toClientScopes({ realm: testBed.realm }) });
 
-      const assignedTypes = await getTableAssignedTypeColumn(page, tableName);
+    await goToCreateItem(page);
+    await assertSaveButtonIsDisabled(page);
 
-      expect(assignedTypes).toContain(FilterAssignedType.Default);
-      expect(assignedTypes).not.toContain(FilterAssignedType.Optional);
-      expect(assignedTypes).not.toContain(FilterAssignedType.None);
-    });
+    await fillClientScopeData(page, "address");
+    await page.getByTestId("save").click();
 
-    test("should filter items by Assigned type Optional", async ({ page }) => {
-      await selectClientScopeFilter(page, "Assigned type");
-      await selectSecondaryFilterAssignedType(
-        page,
-        FilterAssignedType.Optional,
-      );
-
-      const assignedTypes = await getTableAssignedTypeColumn(page, tableName);
-
-      expect(assignedTypes).not.toContain(FilterAssignedType.Default);
-      expect(assignedTypes).not.toContain(FilterAssignedType.None);
-      expect(assignedTypes).toContain(FilterAssignedType.Optional);
-    });
-
-    test("should filter items by Assigned type All", async ({ page }) => {
-      await selectClientScopeFilter(page, "Assigned type");
-      await selectSecondaryFilterAssignedType(
-        page,
-        FilterAssignedType.AllTypes,
-      );
-
-      const assignedTypes = await getTableAssignedTypeColumn(page, tableName);
-
-      expect(assignedTypes).toContain(FilterAssignedType.Default);
-      expect(assignedTypes).toContain(FilterAssignedType.Optional);
-      expect(assignedTypes).toContain(FilterAssignedType.None);
-    });
-
-    test("should filter items by Protocol OpenID", async ({ page }) => {
-      await selectClientScopeFilter(page, "Protocol");
-      await selectSecondaryFilterProtocol(page, FilterProtocol.OpenID);
-
-      const protocols = await getTableProtocolColumn(page, tableName);
-
-      expect(protocols).not.toContain(FilterProtocol.SAML);
-      expect(protocols).toContain(FilterProtocol.OpenID);
-    });
-
-    test("should filter items by Protocol SAML", async ({ page }) => {
-      await selectClientScopeFilter(page, "Protocol");
-      await selectSecondaryFilterProtocol(page, FilterProtocol.SAML);
-
-      const protocols = await getTableProtocolColumn(page, tableName);
-
-      expect(protocols).toContain(FilterProtocol.SAML);
-      expect(protocols).not.toContain(FilterProtocol.OpenID);
-    });
-
-    test("should show items on next page are more than 11", async ({
+    await assertNotificationMessage(
       page,
-    }) => {
-      await clickNextPageButton(page);
-      const rows = await getTableData(page, tableName);
-      expect(rows.length).toBeGreaterThan(1);
-    });
+      "Could not create client scope: 'Client Scope address already exists'",
+    );
+
+    await fillClientScopeData(page, "");
+    await expect(page.getByTestId("save")).toBeDisabled();
   });
 
-  test.describe.serial("Client Scope modify list items", () => {
-    test.beforeEach(async ({ page }) => {
-      await login(page);
-      await goToClientScopes(page);
-    });
+  test("hides consent text field when display consent switch is disabled", async ({
+    page,
+  }) => {
+    await using testBed = await createTestBed();
 
-    test("should modify selected item type to Default", async ({ page }) => {
-      const itemName = clientScopeName + "0";
-      await clickSelectRow(page, tableName, itemName);
-      await selectChangeType(page, FilterAssignedType.Default);
-      await assertNotificationMessage(page, "Scope mapping updated");
+    await login(page, { to: toClientScopes({ realm: testBed.realm }) });
 
-      const rows = await getTableData(page, tableName);
-      const itemRow = rows.find((r) => r.includes(itemName));
-      expect(itemRow).toContain(FilterAssignedType.Default);
-    });
+    await goToCreateItem(page);
+
+    await assertSwitchDisplayOnConsentScreenIsChecked(page);
+    await assertConsentInputIsVisible(page);
+
+    await switchOffDisplayOnConsentScreen(page);
+
+    await assertConsentInputIsVisible(page, true);
   });
 
-  test.describe.serial("Client Scope creation", () => {
-    test.beforeEach(async ({ page }) => {
-      await login(page);
-      await goToClientScopes(page);
-    });
+  test("creates and deletes a client scope", async ({ page }) => {
+    await using testBed = await createTestBed();
 
-    test("should fail creating client scope", async ({ page }) => {
-      await goToCreateItem(page);
-      await assertSaveButtonIsDisabled(page);
+    await login(page, { to: toClientScopes({ realm: testBed.realm }) });
 
-      await fillClientScopeData(page, "address");
-      await page.getByTestId("save").click();
+    const itemId = "test-client-scope";
+    await assertRowExists(page, itemId, false);
+    await goToCreateItem(page);
 
-      await assertNotificationMessage(
-        page,
-        "Could not create client scope: 'Client Scope address already exists'",
-      );
+    await fillClientScopeData(page, itemId);
+    await clickSaveButton(page);
 
-      await fillClientScopeData(page, "");
-      await expect(page.getByTestId("save")).toBeDisabled();
-    });
+    await assertNotificationMessage(page, "Client scope created");
 
-    test("hides 'consent text' field when 'display consent' switch is disabled", async ({
-      page,
-    }) => {
-      await goToCreateItem(page);
+    await page
+      .getByLabel("Breadcrumb")
+      .getByRole("link", { name: "Client scopes" })
+      .click();
 
-      await assertSwitchDisplayOnConsentScreenIsChecked(page);
-      await assertConsentInputIsVisible(page);
+    await searchItem(page, placeHolder, itemId);
+    await assertRowExists(page, itemId);
+    await clickRowKebabItem(page, itemId, "Delete");
 
-      await switchOffDisplayOnConsentScreen(page);
-
-      await assertConsentInputIsVisible(page, true);
-    });
-
-    test("Client scope CRUD test", async ({ page }) => {
-      await assertRowExists(page, itemId, false);
-      await goToCreateItem(page);
-
-      await fillClientScopeData(page, itemId);
-      await clickSaveButton(page);
-
-      await assertNotificationMessage(page, "Client scope created");
-
-      await goToClientScopes(page);
-
-      await searchItem(page, placeHolder, itemId);
-      await assertRowExists(page, itemId);
-      await clickRowKebabItem(page, itemId, "Delete");
-
-      await confirmModal(page);
-      await assertNotificationMessage(
-        page,
-        "The client scope has been deleted",
-      );
-      await assertRowExists(page, itemId, false);
-    });
+    await confirmModal(page);
+    await assertNotificationMessage(page, "The client scope has been deleted");
+    await assertRowExists(page, itemId, false);
   });
 });

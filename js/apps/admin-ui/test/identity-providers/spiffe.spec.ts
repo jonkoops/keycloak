@@ -1,20 +1,17 @@
 import { test } from "@playwright/test";
-import adminClient from "../utils/AdminClient.ts";
+import { toIdentityProviders } from "../../src/identity-providers/routes/IdentityProviders.tsx";
+import { createTestBed } from "../support/testbed.ts";
 import { login } from "../utils/login.ts";
 import { assertNotificationMessage } from "../utils/masthead.ts";
 import { goToIdentityProviders } from "../utils/sidebar.ts";
 import { clickTableRowItem } from "../utils/table.ts";
 import { clickSaveButton, createSPIFFEProvider } from "./main.ts";
 
-test.beforeEach(async ({ page }) => {
-  await login(page);
-  await goToIdentityProviders(page);
-});
-
-test.afterAll(() => adminClient.deleteIdentityProvider("spiffe"));
-
-test.describe.serial("SPIFFE identity provider test", () => {
+test.describe("SPIFFE identity provider test", () => {
   test("should create a SPIFFE provider", async ({ page }) => {
+    await using testBed = await createTestBed();
+
+    await login(page, { to: toIdentityProviders({ realm: testBed.realm }) });
     await createSPIFFEProvider(
       page,
       "spiffe",

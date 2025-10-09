@@ -1,4 +1,6 @@
 import { test } from "@playwright/test";
+import { toClients } from "../../src/clients/routes/Clients.tsx";
+import { createTestBed } from "../support/testbed.ts";
 import adminClient from "../utils/AdminClient.ts";
 import { clickSaveButton } from "../utils/form.ts";
 import { login } from "../utils/login.ts";
@@ -37,11 +39,16 @@ import {
 
 test.describe.serial("Client authentication subtab", () => {
   const clientId = `client-authentication-${crypto.randomUUID()}`;
+  let testBed: Awaited<ReturnType<typeof createTestBed>>;
+  let realm: string;
 
   test.beforeAll(async () => {
+    testBed = await createTestBed();
+    realm = testBed.realm;
     await adminClient.createClient({
       protocol: "openid-connect",
       clientId,
+      realm,
       publicClient: false,
       authorizationServicesEnabled: true,
       serviceAccountsEnabled: true,
@@ -50,12 +57,11 @@ test.describe.serial("Client authentication subtab", () => {
   });
 
   test.afterAll(async () => {
-    await adminClient.deleteClient(clientId);
+    await testBed[Symbol.asyncDispose]();
   });
 
   test.beforeEach(async ({ page }) => {
-    await login(page);
-    await goToClients(page);
+    await login(page, { to: toClients({ realm }) });
     await searchItem(page, "Search for client", clientId);
     await clickTableRowItem(page, clientId);
     await goToAuthorizationTab(page);
@@ -151,7 +157,7 @@ test.describe.serial("Client authentication subtab", () => {
       description: "Extra client field",
     });
 
-    await inputClient(page, "master-realm");
+    await inputClient(page, clientId);
     await clickSaveButton(page);
     await assertNotificationMessage(page, "Successfully created the policy");
   });
@@ -228,32 +234,28 @@ test.describe
   });
 });
 
-test.describe.serial("Accessibility tests for client authorization", () => {
-  const clientId = `realm-view-authz-client-${crypto.randomUUID()}`;
-  test.beforeAll(() =>
-    adminClient.createClient({
+test.describe("Accessibility tests for client authorization", () => {
+  test("Check a11y violations on load/ client authorization", async ({
+    page,
+  }) => {
+    await using testBed = await createTestBed();
+    const clientId = `realm-view-authz-client-${crypto.randomUUID()}`;
+    
+    await adminClient.createClient({
       protocol: "openid-connect",
       clientId,
+      realm: testBed.realm,
       publicClient: false,
       authorizationServicesEnabled: true,
       serviceAccountsEnabled: true,
       standardFlowEnabled: true,
-    }),
-  );
+    });
 
-  test.afterAll(() => adminClient.deleteClient(clientId));
-
-  test.beforeEach(async ({ page }) => {
-    await login(page);
-    await goToClients(page);
+    await login(page, { to: toClients({ realm: testBed.realm }) });
     await searchItem(page, "Search for client", clientId);
     await clickTableRowItem(page, clientId);
     await goToAuthorizationTab(page);
-  });
 
-  test("Check a11y violations on load/ client authorization", async ({
-    page,
-  }) => {
     await assertAxeViolations(page);
   });
 });

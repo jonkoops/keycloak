@@ -1,5 +1,6 @@
 import { test } from "@playwright/test";
-import { v4 as uuid } from "uuid";
+import { toGroups } from "../../src/groups/routes/Groups.tsx";
+import { createTestBed } from "../support/testbed.ts";
 import adminClient from "../utils/AdminClient.ts";
 import { login } from "../utils/login.ts";
 import { assertNotificationMessage } from "../utils/masthead.ts";
@@ -11,7 +12,6 @@ import {
   confirmModalAssign,
   pickRole,
 } from "../utils/roles.ts";
-import { goToGroups } from "../utils/sidebar.ts";
 import {
   assertEmptyTable,
   assertRowExists,
@@ -19,59 +19,63 @@ import {
 } from "../utils/table.ts";
 import { goToRoleMappingTab } from "./role.ts";
 
-test.describe.serial("Role mappings", () => {
-  const predefinedGroup = "group1";
-  const predefinedGroup1 = "group2";
-
-  const roleName = `remove-role-${uuid()}`;
-
-  test.beforeAll(async () => {
-    await adminClient.createGroup(predefinedGroup);
-    const { id } = await adminClient.createGroup(predefinedGroup1);
-
-    await adminClient.createRealmRole({
-      name: roleName,
-      clientRole: true,
+test.describe("Role mappings", () => {
+  test("shows an empty table when no roles are mapped", async ({ page }) => {
+    await using testBed = await createTestBed({
+      groups: [{ name: "group1" }],
     });
-    await adminClient.addRealmRoleToGroup(id, roleName);
-  });
 
-  test.afterAll(async () => {
-    await adminClient.deleteRealmRole(roleName);
-    await adminClient.deleteGroups();
-  });
-
-  test.beforeEach(async ({ page }) => {
-    await login(page);
-    await goToGroups(page);
-    await clickTableRowItem(page, predefinedGroup);
+    await login(page, { to: toGroups({ realm: testBed.realm }) });
+    await clickTableRowItem(page, "group1");
     await goToRoleMappingTab(page);
-  });
 
-  test("Check empty state", async ({ page }) => {
     await assertEmptyTable(page);
   });
 
-  test("Assign roles from empty state", async ({ page }) => {
+  test("creates a role mapping", async ({ page }) => {
+    await using testBed = await createTestBed({
+      groups: [{ name: "group1" }],
+    });
+
+    await login(page, { to: toGroups({ realm: testBed.realm }) });
+    await clickTableRowItem(page, "group1");
+    await goToRoleMappingTab(page);
+
     await pickRoleType(page, "roles");
-    await pickRole(page, "default-roles-master", true);
+    await pickRole(page, `default-roles-${testBed.realm}`, true);
     await confirmModalAssign(page);
 
     await assertNotificationMessage(page, "Role mapping updated");
-    await assertRowExists(page, "default-roles-master");
+    await assertRowExists(page, `default-roles-${testBed.realm}`);
   });
 
-  test("Check hide inherited roles option", async ({ page }) => {
-    await goToGroups(page);
-    await clickTableRowItem(page, predefinedGroup1);
+  test("hides inherited roles", async ({ page }) => {
+    const roleName = 'test-role';
+    await using testBed = await createTestBed({
+      roles: { realm: [{ name: roleName }] },
+    });
+
+    const { id } = await adminClient.createGroup("group2", testBed.realm);
+    await adminClient.addRealmRoleToGroup(id!, roleName, testBed.realm);
+
+    await login(page, { to: toGroups({ realm: testBed.realm }) });
+    await clickTableRowItem(page, "group2");
     await goToRoleMappingTab(page);
 
     await clickHideInheritedRoles(page);
   });
 
-  test("Remove roles", async ({ page }) => {
-    await goToGroups(page);
-    await clickTableRowItem(page, predefinedGroup1);
+  test("removes a role mapping", async ({ page }) => {
+    const roleName = 'remove-role';
+    await using testBed = await createTestBed({
+      roles: { realm: [{ name: roleName }] },
+    });
+
+    const { id } = await adminClient.createGroup("group2", testBed.realm);
+    await adminClient.addRealmRoleToGroup(id, roleName, testBed.realm);
+
+    await login(page, { to: toGroups({ realm: testBed.realm }) });
+    await clickTableRowItem(page, "group2");
     await goToRoleMappingTab(page);
 
     await pickRole(page, roleName);

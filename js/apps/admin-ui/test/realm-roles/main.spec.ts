@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { v4 as uuid } from "uuid";
+import { toRealmRoles } from "../../src/realm-roles/routes/RealmRoles.tsx";
 import { fillRoleData } from "../clients/role.ts";
 import adminClient from "../utils/AdminClient.ts";
 import {
@@ -20,7 +20,6 @@ import {
   confirmModalAssign,
   pickRole,
 } from "../utils/roles.ts";
-import { goToRealm, goToRealmRoles } from "../utils/sidebar.ts";
 import {
   assertEmptyTable,
   assertNoResults,
@@ -29,34 +28,30 @@ import {
   clickTableRowItem,
   searchItem,
 } from "../utils/table.ts";
+import { createTestBed } from "../support/testbed.ts";
 import {
   assertUnassignDisabled,
   clickCreateRoleButton,
   goToAssociatedRolesTab,
 } from "./main.ts";
 
-test.describe.serial("Realm roles test", () => {
-  const realmName = `realm-roles-${uuid()}`;
-  const prefix = "realm_role_crud";
+test.describe("Realm roles", () => {
   const searchPlaceHolder = "Search role by name";
 
-  test.beforeAll(() => adminClient.createRealm(realmName));
-  test.afterAll(() => adminClient.deleteRealm(realmName));
+  test("fails to create realm role with empty name", async ({ page }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toRealmRoles({ realm: testBed.realm }) });
 
-  test.beforeEach(async ({ page }) => {
-    await login(page);
-    await goToRealm(page, realmName);
-    await goToRealmRoles(page);
-  });
-
-  test("should fail creating realm role", async ({ page }) => {
     await clickCreateRoleButton(page);
     await clickSaveButton(page);
     await assertRequiredFieldError(page, "name");
 
     await fillRoleData(page, "admin");
     await clickSaveButton(page);
-    await goToRealmRoles(page);
+    await page
+      .getByLabel("Breadcrumb")
+      .getByRole("link", { name: "Realm roles" })
+      .click();
 
     await clickCreateRoleButton(page);
     await fillRoleData(page, "admin");
@@ -67,24 +62,32 @@ test.describe.serial("Realm roles test", () => {
     );
   });
 
-  test("shouldn't create a realm role based with only whitespace name", async ({
+  test("doesn't create a realm role with only whitespace name", async ({
     page,
   }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toRealmRoles({ realm: testBed.realm }) });
+
     await clickCreateRoleButton(page);
     await fillRoleData(page, " ");
     await assertRequiredFieldError(page, "name");
   });
 
-  test("Realm role CRUD test", async ({ page }) => {
-    const itemId = prefix + uuid();
+  test("creates and deletes a realm role", async ({ page }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toRealmRoles({ realm: testBed.realm }) });
 
-    // Create
+    const itemId = "test-role";
+
     await assertRowExists(page, itemId, false);
     await clickCreateRoleButton(page);
     await fillRoleData(page, itemId);
     await clickSaveButton(page);
     await assertNotificationMessage(page, "Role created");
-    await goToRealmRoles(page);
+    await page
+      .getByLabel("Breadcrumb")
+      .getByRole("link", { name: "Realm roles" })
+      .click();
 
     await searchItem(page, searchPlaceHolder, itemId);
     await clickRowKebabItem(page, itemId, "Delete");
@@ -94,30 +97,41 @@ test.describe.serial("Realm roles test", () => {
     await assertRowExists(page, itemId, false);
   });
 
-  test("should delete role from details action", async ({ page }) => {
-    const itemId = prefix + uuid();
+  test("deletes role from details action", async ({ page }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toRealmRoles({ realm: testBed.realm }) });
+
+    const itemId = "test-role-delete";
 
     await clickCreateRoleButton(page);
     await fillRoleData(page, itemId);
     await clickSaveButton(page);
     await assertNotificationMessage(page, "Role created");
-    await goToRealmRoles(page);
+    await page
+      .getByLabel("Breadcrumb")
+      .getByRole("link", { name: "Realm roles" })
+      .click();
     await clickRowKebabItem(page, itemId, "Delete");
     await confirmModal(page);
     await assertNotificationMessage(page, "The role has been deleted");
   });
 
-  test("should not be able to delete default role", async ({ page }) => {
-    const defaultRole = "default-roles-" + realmName;
+  test("cannot delete default role", async ({ page }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toRealmRoles({ realm: testBed.realm }) });
+
+    const defaultRole = `default-roles-${testBed.realm}`;
     await searchItem(page, searchPlaceHolder, defaultRole);
     await clickRowKebabItem(page, defaultRole, "Delete");
     await assertNotificationMessage(page, "You cannot delete a default role.");
   });
 
-  test("Add associated roles test", async ({ page }) => {
-    const itemId = prefix + uuid();
+  test("adds associated roles", async ({ page }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toRealmRoles({ realm: testBed.realm }) });
 
-    // Create
+    const itemId = "test-role-associated";
+
     await assertRowExists(page, itemId, false);
     await clickCreateRoleButton(page);
     await fillRoleData(page, itemId);
@@ -144,9 +158,12 @@ test.describe.serial("Realm roles test", () => {
     await assertNotificationMessage(page, "Associated roles have been added");
   });
 
-  test("should search existing associated role by name and go to it", async ({
+  test("searches existing associated role by name and navigates to it", async ({
     page,
   }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toRealmRoles({ realm: testBed.realm }) });
+
     const realmRole = "offline_access";
     await searchItem(page, searchPlaceHolder, "offline_access");
     await assertRowExists(page, realmRole);
@@ -157,10 +174,13 @@ test.describe.serial("Realm roles test", () => {
     await page.click("text=Cancel");
   });
 
-  test("should go to default-roles-master link role name and check assign roles table is not empty", async ({
+  test("navigates to default role and checks assign roles table", async ({
     page,
   }) => {
-    const defaultRole = "default-roles-" + realmName;
+    await using testBed = await createTestBed();
+    await login(page, { to: toRealmRoles({ realm: testBed.realm }) });
+
+    const defaultRole = `default-roles-${testBed.realm}`;
     await clickTableRowItem(page, defaultRole);
 
     await page.click("text=Default groups");
@@ -170,17 +190,21 @@ test.describe.serial("Realm roles test", () => {
     await expect(page.getByTestId("assigned-roles")).toBeVisible();
   });
 
-  test("Should search non-existent associated role by name", async ({
-    page,
-  }) => {
+  test("searches for non-existent associated role", async ({ page }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toRealmRoles({ realm: testBed.realm }) });
+
     const itemName = "non-existent-associated-role";
     await searchItem(page, searchPlaceHolder, itemName);
     await assertNoResults(page);
   });
 
-  test("Should hide inherited roles test", async ({ page }) => {
-    const itemId = prefix + uuid();
-    await adminClient.createRealmRole({ name: itemId, realm: realmName });
+  test("hides inherited roles", async ({ page }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toRealmRoles({ realm: testBed.realm }) });
+
+    const itemId = "test-role-inherited";
+    await adminClient.createRealmRole({ name: itemId, realm: testBed.realm });
 
     await searchItem(page, searchPlaceHolder, itemId);
     await clickTableRowItem(page, itemId);
@@ -188,11 +212,12 @@ test.describe.serial("Realm roles test", () => {
     await page.getByTestId("show-inherited-roles-empty-action").click();
   });
 
-  test("Should fail to remove role when all unchecked from search bar", async ({
-    page,
-  }) => {
-    const itemId = prefix + uuid();
-    await adminClient.createRealmRole({ name: itemId, realm: realmName });
+  test("fails to remove role when all unchecked", async ({ page }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toRealmRoles({ realm: testBed.realm }) });
+
+    const itemId = "test-role-unassign-fail";
+    await adminClient.createRealmRole({ name: itemId, realm: testBed.realm });
 
     await searchItem(page, searchPlaceHolder, itemId);
     await clickTableRowItem(page, itemId);
@@ -205,9 +230,12 @@ test.describe.serial("Realm roles test", () => {
     await assertUnassignDisabled(page);
   });
 
-  test("Should delete single non-inherited role item", async ({ page }) => {
-    const itemId = prefix + uuid();
-    await adminClient.createRealmRole({ name: itemId, realm: realmName });
+  test("deletes single non-inherited role item", async ({ page }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toRealmRoles({ realm: testBed.realm }) });
+
+    const itemId = "test-role-delete-single";
+    await adminClient.createRealmRole({ name: itemId, realm: testBed.realm });
 
     await searchItem(page, searchPlaceHolder, itemId);
     await clickTableRowItem(page, itemId);
@@ -222,9 +250,12 @@ test.describe.serial("Realm roles test", () => {
     await assertNotificationMessage(page, "Role mapping updated");
   });
 
-  test("Should delete all roles from search bar", async ({ page }) => {
-    const itemId = prefix + uuid();
-    await adminClient.createRealmRole({ name: itemId, realm: realmName });
+  test("deletes all roles from search bar", async ({ page }) => {
+    await using testBed = await createTestBed();
+    await login(page, { to: toRealmRoles({ realm: testBed.realm }) });
+
+    const itemId = "test-role-delete-all";
+    await adminClient.createRealmRole({ name: itemId, realm: testBed.realm });
 
     await searchItem(page, searchPlaceHolder, itemId);
     await clickTableRowItem(page, itemId);
@@ -240,22 +271,21 @@ test.describe.serial("Realm roles test", () => {
     await assertNotificationMessage(page, "Role mapping updated");
   });
 
-  test.describe.serial("edit role details", () => {
-    const editRoleName = "going to edit";
+  test.describe("edit role details", () => {
+    const editRoleName = "role-to-edit";
     const description = "some description";
     const updateDescription = "updated description";
 
-    test.beforeEach(async () => {
+    test("edits realm role details", async ({ page }) => {
+      await using testBed = await createTestBed();
+      await login(page, { to: toRealmRoles({ realm: testBed.realm }) });
+
       await adminClient.createRealmRole({
-        realm: realmName,
+        realm: testBed.realm,
         name: editRoleName,
         description,
       });
-    });
 
-    test.afterEach(() => adminClient.deleteRealmRole(editRoleName, realmName));
-
-    test("should edit realm role details", async ({ page }) => {
       await searchItem(page, searchPlaceHolder, editRoleName);
       await clickTableRowItem(page, editRoleName);
       await expect(page.locator("input[name='name']")).toBeDisabled();
@@ -270,7 +300,16 @@ test.describe.serial("Realm roles test", () => {
       );
     });
 
-    test("should add attribute", async ({ page }) => {
+    test("adds single attribute", async ({ page }) => {
+      await using testBed = await createTestBed();
+      await login(page, { to: toRealmRoles({ realm: testBed.realm }) });
+
+      await adminClient.createRealmRole({
+        realm: testBed.realm,
+        name: editRoleName,
+        description,
+      });
+
       await searchItem(page, searchPlaceHolder, editRoleName);
       await clickTableRowItem(page, editRoleName);
 
@@ -281,7 +320,16 @@ test.describe.serial("Realm roles test", () => {
       await assertAttributeLength(page, 1);
     });
 
-    test("should add attribute multiple", async ({ page }) => {
+    test("adds multiple attributes", async ({ page }) => {
+      await using testBed = await createTestBed();
+      await login(page, { to: toRealmRoles({ realm: testBed.realm }) });
+
+      await adminClient.createRealmRole({
+        realm: testBed.realm,
+        name: editRoleName,
+        description,
+      });
+
       await searchItem(page, searchPlaceHolder, editRoleName);
       await clickTableRowItem(page, editRoleName);
 
@@ -297,7 +345,16 @@ test.describe.serial("Realm roles test", () => {
       await assertAttribute(page, "two", "2", 1);
     });
 
-    test("should delete attribute", async ({ page }) => {
+    test("deletes attribute", async ({ page }) => {
+      await using testBed = await createTestBed();
+      await login(page, { to: toRealmRoles({ realm: testBed.realm }) });
+
+      await adminClient.createRealmRole({
+        realm: testBed.realm,
+        name: editRoleName,
+        description,
+      });
+
       await searchItem(page, searchPlaceHolder, editRoleName);
       await clickTableRowItem(page, editRoleName);
       await goToAttributesTab(page);

@@ -1,6 +1,6 @@
 import { test } from "@playwright/test";
-import { v4 as uuid } from "uuid";
-import adminClient from "../utils/AdminClient.ts";
+import { toGroups } from "../../src/groups/routes/Groups.tsx";
+import { createTestBed } from "../support/testbed.ts";
 import {
   assertAttributeLength,
   clickAttributeSaveButton,
@@ -10,24 +10,19 @@ import {
 } from "../utils/attributes.ts";
 import { login } from "../utils/login.ts";
 import { assertNotificationMessage } from "../utils/masthead.ts";
-import { goToGroups } from "../utils/sidebar.ts";
-import { goToGroupDetails } from "./util.ts";
+import { clickTableRowItem } from "../utils/table.ts";
 
-test.describe.serial("Attributes", () => {
-  const groupName = `group-${uuid()}`;
+test.describe("Attributes", () => {
+  test("adds and removes an attribute", async ({ page }) => {
+    await using testBed = await createTestBed({
+      groups: [{ name: "test-group" }],
+    });
 
-  test.beforeAll(() => adminClient.createGroup(groupName));
-
-  test.afterAll(() => adminClient.deleteGroups());
-
-  test.beforeEach(async ({ page }) => {
-    await login(page);
-    await goToGroups(page);
-    await goToGroupDetails(page, groupName);
+    await login(page, { to: toGroups({ realm: testBed.realm }) });
+    await clickTableRowItem(page, "test-group");
     await goToAttributesTab(page);
-  });
 
-  test("Add/remove attribute", async ({ page }) => {
+    // add attribute
     await fillAttributeData(page, "key", "value");
     await clickAttributeSaveButton(page);
     await assertNotificationMessage(page, "Group updated");

@@ -1,5 +1,7 @@
 import { test } from "@playwright/test";
 import { v4 as uuid } from "uuid";
+import { toIdentityProviders } from "../../src/identity-providers/routes/IdentityProviders.tsx";
+import { createTestBed } from "../support/testbed.ts";
 import adminClient from "../utils/AdminClient.ts";
 import { switchOn } from "../utils/form.ts";
 import { login } from "../utils/login.ts";
@@ -22,20 +24,15 @@ import {
   setUrl,
 } from "./main.ts";
 
-test.describe.serial("OIDC identity provider test", () => {
-  const oidcProviderName = "oidc";
-  const secret = "123";
-
-  test.beforeEach(async ({ page }) => {
-    await login(page);
-    await goToIdentityProviders(page);
-  });
-
-  test.afterAll(() => adminClient.deleteIdentityProvider(oidcProviderName));
-
+test.describe("OIDC identity provider test", () => {
   test("should create an OIDC provider using discovery url", async ({
     page,
   }) => {
+    await using testBed = await createTestBed();
+    const oidcProviderName = "oidc";
+    const secret = "123";
+
+    await login(page, { to: toIdentityProviders({ realm: testBed.realm }) });
     await createOIDCProvider(page, oidcProviderName, secret);
     await assertNotificationMessage(
       page,
@@ -71,22 +68,23 @@ test.describe.serial("OIDC identity provider test", () => {
   });
 });
 
-test.describe.serial("Edit OIDC Provider", () => {
+test.describe("Edit OIDC Provider", () => {
   const oidcProviderName = "OpenID Connect v1.0";
-  const alias = `edit-oidc-${uuid()}`;
-
-  test.beforeEach(async ({ page }) => {
-    await adminClient.createIdentityProvider(oidcProviderName, alias);
-    await login(page);
-    await goToIdentityProviders(page);
-    await clickTableRowItem(page, oidcProviderName);
-  });
-
-  test.afterEach(() => adminClient.deleteIdentityProvider(alias));
 
   test("should add OIDC mapper of type Attribute Importer", async ({
     page,
   }) => {
+    await using testBed = await createTestBed();
+    const alias = `edit-oidc-${uuid()}`;
+
+    await adminClient.createIdentityProvider(
+      oidcProviderName,
+      alias,
+      testBed.realm,
+    );
+    await login(page, { to: toIdentityProviders({ realm: testBed.realm }) });
+    await clickTableRowItem(page, oidcProviderName);
+
     await goToMappersTab(page);
     await addMapper(page, "oidc-user-attribute", "OIDC Attribute Importer");
     await clickSaveMapper(page);
@@ -94,6 +92,17 @@ test.describe.serial("Edit OIDC Provider", () => {
   });
 
   test("should add OIDC mapper of type Claim To Role", async ({ page }) => {
+    await using testBed = await createTestBed();
+    const alias = `edit-oidc-${uuid()}`;
+
+    await adminClient.createIdentityProvider(
+      oidcProviderName,
+      alias,
+      testBed.realm,
+    );
+    await login(page, { to: toIdentityProviders({ realm: testBed.realm }) });
+    await clickTableRowItem(page, oidcProviderName);
+
     await goToMappersTab(page);
     await addMapper(page, "oidc-role", "OIDC Claim to Role");
     await clickSaveMapper(page);
@@ -101,6 +110,17 @@ test.describe.serial("Edit OIDC Provider", () => {
   });
 
   test("should cancel the addition of the OIDC mapper", async ({ page }) => {
+    await using testBed = await createTestBed();
+    const alias = `edit-oidc-${uuid()}`;
+
+    await adminClient.createIdentityProvider(
+      oidcProviderName,
+      alias,
+      testBed.realm,
+    );
+    await login(page, { to: toIdentityProviders({ realm: testBed.realm }) });
+    await clickTableRowItem(page, oidcProviderName);
+
     await goToMappersTab(page);
     await addMapper(page, "oidc-role", "OIDC Claim to Role");
     await clickCancelMapper(page);

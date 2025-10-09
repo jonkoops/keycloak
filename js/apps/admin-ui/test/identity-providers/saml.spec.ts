@@ -1,5 +1,7 @@
 import { test } from "@playwright/test";
 import { v4 as uuid } from "uuid";
+import { toIdentityProviders } from "../../src/identity-providers/routes/IdentityProviders.tsx";
+import { createTestBed } from "../support/testbed.ts";
 import adminClient from "../utils/AdminClient.ts";
 import { login } from "../utils/login.ts";
 import { assertNotificationMessage } from "../utils/masthead.ts";
@@ -15,20 +17,15 @@ import {
 } from "./main.ts";
 import { editSAMLSettings } from "./saml.ts";
 
-test.describe.serial("SAML identity provider test", () => {
-  const samlProviderName = "saml";
-  const samlDisplayName = "saml";
-
-  test.afterAll(() => adminClient.deleteIdentityProvider(samlProviderName));
-
-  test.beforeEach(async ({ page }) => {
-    await login(page);
-    await goToIdentityProviders(page);
-  });
-
+test.describe("SAML identity provider test", () => {
   test("should create a SAML provider using entity descriptor", async ({
     page,
   }) => {
+    await using testBed = await createTestBed();
+    const samlProviderName = "saml";
+    const samlDisplayName = "saml";
+
+    await login(page, { to: toIdentityProviders({ realm: testBed.realm }) });
     await createSAMLProvider(page, samlProviderName, samlDisplayName);
     await assertNotificationMessage(
       page,
@@ -37,24 +34,25 @@ test.describe.serial("SAML identity provider test", () => {
   });
 });
 
-test.describe.serial("SAML identity provider test", () => {
+test.describe("SAML identity provider edit tests", () => {
   const samlProviderName = "SAML v2.0";
   const classRefName = "acClassRef-1";
   const declRefName = "acDeclRef-1";
-  const alias = `edit-oidc-${uuid()}`;
-
-  test.beforeEach(async ({ page }) => {
-    await adminClient.createIdentityProvider(samlProviderName, alias);
-    await login(page);
-    await goToIdentityProviders(page);
-    await clickTableRowItem(page, samlProviderName);
-  });
-
-  test.afterEach(() => adminClient.deleteIdentityProvider(alias));
 
   test("should add auth constraints to existing SAML provider", async ({
     page,
   }) => {
+    await using testBed = await createTestBed();
+    const alias = `edit-saml-${uuid()}`;
+    
+    await adminClient.createIdentityProvider(
+      samlProviderName,
+      alias,
+      testBed.realm,
+    );
+    await login(page, { to: toIdentityProviders({ realm: testBed.realm }) });
+    await clickTableRowItem(page, samlProviderName);
+
     await addAuthConstraints(page, classRefName, declRefName);
     await assertNotificationMessage(page, "Provider successfully updated");
   });
@@ -76,6 +74,17 @@ test.describe.serial("SAML identity provider test", () => {
 
   for (const { type, name } of mapperTests) {
     test(`should add SAML mapper of type ${name}`, async ({ page }) => {
+      await using testBed = await createTestBed();
+      const alias = `edit-saml-${uuid()}`;
+
+      await adminClient.createIdentityProvider(
+        samlProviderName,
+        alias,
+        testBed.realm,
+      );
+      await login(page, { to: toIdentityProviders({ realm: testBed.realm }) });
+      await clickTableRowItem(page, samlProviderName);
+
       await goToMappersTab(page);
       await addMapper(page, type, name);
       await clickSaveMapper(page);
@@ -85,6 +94,17 @@ test.describe.serial("SAML identity provider test", () => {
   }
 
   test("should edit SAML settings", async ({ page }) => {
+    await using testBed = await createTestBed();
+    const alias = `edit-saml-${uuid()}`;
+
+    await adminClient.createIdentityProvider(
+      samlProviderName,
+      alias,
+      testBed.realm,
+    );
+    await login(page, { to: toIdentityProviders({ realm: testBed.realm }) });
+    await clickTableRowItem(page, samlProviderName);
+
     await editSAMLSettings(page, samlProviderName);
     await assertNotificationMessage(page, "Provider successfully updated");
   });

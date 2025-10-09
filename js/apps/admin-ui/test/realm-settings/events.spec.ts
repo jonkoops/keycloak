@@ -1,5 +1,6 @@
 import { test } from "@playwright/test";
-import adminClient from "../utils/AdminClient.ts";
+import { toRealmSettings } from "../../src/realm-settings/routes/RealmSettings.tsx";
+import { createTestBed } from "../support/testbed.ts";
 import { switchOn } from "../utils/form.ts";
 import { login } from "../utils/login.ts";
 import { assertNotificationMessage } from "../utils/masthead.ts";
@@ -17,20 +18,12 @@ import {
   goToRealmEventsTab,
 } from "./events.ts";
 
-test.describe.serial("Realm settings events tab tests", () => {
-  const realmName = `events-realm-settings-${crypto.randomUUID()}`;
-
-  test.beforeAll(() => adminClient.createRealm(realmName));
-  test.afterAll(() => adminClient.deleteRealm(realmName));
-
-  test.beforeEach(async ({ page }) => {
-    await login(page);
-    await goToRealm(page, realmName);
-    await goToRealmSettings(page);
-    await goToRealmEventsTab(page);
-  });
-
+test.describe("Realm settings events tab tests", () => {
   test("Enable user events", async ({ page }) => {
+    await using testBed = await createTestBed();
+
+    await login(page, { to: toRealmSettings({ realm: testBed.realm, tab: "events" }) });
+    await goToRealmEventsTab(page);
     await goToEventsTab(page);
 
     await switchOn(page, "[data-testid='eventsEnabled']");
@@ -57,17 +50,29 @@ test.describe.serial("Realm settings events tab tests", () => {
   });
 
   test("Should revert saving event listener", async ({ page }) => {
+    await using testBed = await createTestBed();
+
+    await login(page, { to: toRealmSettings({ realm: testBed.realm, tab: "events" }) });
+    await goToRealmEventsTab(page);
     await fillEventListener(page, "email");
     await page.getByTestId("revertEventListenerBtn").click();
   });
 
   test("Should save event listener", async ({ page }) => {
+    await using testBed = await createTestBed();
+
+    await login(page, { to: toRealmSettings({ realm: testBed.realm, tab: "events" }) });
+    await goToRealmEventsTab(page);
     await fillEventListener(page, "email");
     await clickSaveEventsListener(page);
     await assertNotificationMessage(page, "Event listener has been updated.");
   });
 
   test("Should remove event from event listener", async ({ page }) => {
+    await using testBed = await createTestBed();
+
+    await login(page, { to: toRealmSettings({ realm: testBed.realm, tab: "events" }) });
+    await goToRealmEventsTab(page);
     await clickRemoveListener(page, "jboss-logging");
     await clickSaveEventsListener(page);
     await assertNotificationMessage(page, "Event listener has been updated.");
