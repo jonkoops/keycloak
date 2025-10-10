@@ -1,16 +1,12 @@
 import type { Page } from "@playwright/test";
-import { clickTableRowItem } from "./table";
+import { clickTableRowItem } from "./table.ts";
 
 export async function goToRealm(page: Page, realmName: string) {
   const currentRealm = await page.getByTestId("currentRealm").textContent();
   if (currentRealm !== realmName) {
-    await goToRealms(page);
+    await page.getByTestId("nav-item-realms").click();
     await clickTableRowItem(page, realmName);
   }
-}
-
-export async function goToRealms(page: Page) {
-  await page.getByTestId("nav-item-realms").click();
 }
 
 export async function goToOrganizations(page: Page) {
