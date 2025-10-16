@@ -62,6 +62,18 @@ class AdminClient {
     return await this.#client.clients.create(client);
   }
 
+  async findClientByClientId(
+    clientId: string,
+    realm: string = this.#client.realmName,
+  ) {
+    await this.#login();
+    const clients = await this.#client.clients.find({ clientId, realm });
+    if (!clients.length) {
+      throw new Error(`Client with clientId "${clientId}" not found`);
+    }
+    return clients[0];
+  }
+
   async deleteClient(clientName: string) {
     await this.#login();
     const client = (

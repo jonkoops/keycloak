@@ -1,9 +1,9 @@
 import { expect, test } from "@playwright/test";
-import { v4 as uuidv4 } from "uuid";
+import { toClient } from "../../src/clients/routes/Client.tsx";
+import { createTestBed } from "../support/testbed.ts";
 import adminClient from "../utils/AdminClient.ts";
 import { login } from "../utils/login.ts";
-import { goToClients, goToRealm } from "../utils/sidebar.ts";
-import { assertEmptyTable, clickTableRowItem } from "../utils/table.ts";
+import { assertEmptyTable } from "../utils/table.ts";
 import {
   assertAccessTokenSignatureAlgorithm,
   assertAdvancedSwitchesOn,
@@ -16,7 +16,6 @@ import {
   clickAllCompatibilitySwitch,
   deleteClusterNode,
   expandClusterNode,
-  goToAdvancedTab,
   registerNodeManually,
   revertAdvanced,
   revertCompatibility,
@@ -36,23 +35,25 @@ import {
   switchOid4vciEnabled,
 } from "./advanced.ts";
 
-test.describe.serial("Advanced tab test", () => {
-  const clientId = `advanced-tab-${uuidv4()}`;
+test.describe("Advanced tab", () => {
+  test("manages clustering", async ({ page }) => {
+    await using testBed = await createTestBed({
+      clients: [{ clientId: "test-client", publicClient: true }],
+    });
 
-  test.beforeAll(() =>
-    adminClient.createClient({ clientId, publicClient: true }),
-  );
+    const client = await adminClient.findClientByClientId(
+      "test-client",
+      testBed.realm,
+    );
 
-  test.afterAll(() => adminClient.deleteClient(clientId));
+    await login(page, {
+      to: toClient({
+        realm: testBed.realm,
+        clientId: client.id!,
+        tab: "advanced",
+      }),
+    });
 
-  test.beforeEach(async ({ page }) => {
-    await login(page);
-    await goToClients(page);
-    await clickTableRowItem(page, clientId);
-    await goToAdvancedTab(page);
-  });
-
-  test("Clustering", async ({ page }) => {
     const host = "localhost";
     await expandClusterNode(page);
     await assertEmptyTable(page);
@@ -62,7 +63,24 @@ test.describe.serial("Advanced tab test", () => {
     await assertEmptyTable(page);
   });
 
-  test("Fine grain OpenID connect configuration", async ({ page }) => {
+  test("configures fine grain OpenID connect", async ({ page }) => {
+    await using testBed = await createTestBed({
+      clients: [{ clientId: "test-client" }],
+    });
+
+    const client = await adminClient.findClientByClientId(
+      "test-client",
+      testBed.realm,
+    );
+
+    await login(page, {
+      to: toClient({
+        realm: testBed.realm,
+        clientId: client.id!,
+        tab: "advanced",
+      }),
+    });
+
     const algorithm = "ES384";
     await selectAccessTokenSignatureAlgorithm(page, algorithm);
     await saveFineGrain(page);
@@ -71,7 +89,24 @@ test.describe.serial("Advanced tab test", () => {
     await assertAccessTokenSignatureAlgorithm(page, algorithm);
   });
 
-  test("OIDC Compatibility Modes configuration", async ({ page }) => {
+  test("configures OIDC Compatibility Modes", async ({ page }) => {
+    await using testBed = await createTestBed({
+      clients: [{ clientId: "test-client" }],
+    });
+
+    const client = await adminClient.findClientByClientId(
+      "test-client",
+      testBed.realm,
+    );
+
+    await login(page, {
+      to: toClient({
+        realm: testBed.realm,
+        clientId: client.id!,
+        tab: "advanced",
+      }),
+    });
+
     await clickAllCompatibilitySwitch(page);
     await saveCompatibility(page);
     await switchOffExcludeSessionStateSwitch(page);
@@ -79,11 +114,47 @@ test.describe.serial("Advanced tab test", () => {
     await assertOnExcludeSessionStateSwitch(page);
   });
 
-  test("Client Offline Session Max", async ({ page }) => {
+  test("shows Client Offline Session Max as not visible by default", async ({
+    page,
+  }) => {
+    await using testBed = await createTestBed({
+      clients: [{ clientId: "test-client" }],
+    });
+
+    const client = await adminClient.findClientByClientId(
+      "test-client",
+      testBed.realm,
+    );
+
+    await login(page, {
+      to: toClient({
+        realm: testBed.realm,
+        clientId: client.id!,
+        tab: "advanced",
+      }),
+    });
+
     await assertTokenLifespanClientOfflineSessionMaxVisible(page, false);
   });
 
-  test("Advanced settings", async ({ page }) => {
+  test("configures advanced settings", async ({ page }) => {
+    await using testBed = await createTestBed({
+      clients: [{ clientId: "test-client" }],
+    });
+
+    const client = await adminClient.findClientByClientId(
+      "test-client",
+      testBed.realm,
+    );
+
+    await login(page, {
+      to: toClient({
+        realm: testBed.realm,
+        clientId: client.id!,
+        tab: "advanced",
+      }),
+    });
+
     await clickAdvancedSwitches(page);
     await saveAdvanced(page);
     await assertAdvancedSwitchesOn(page);
@@ -92,7 +163,24 @@ test.describe.serial("Advanced tab test", () => {
     await assertAdvancedSwitchesOn(page);
   });
 
-  test("Authentication flow override", async ({ page }) => {
+  test("overrides authentication flow", async ({ page }) => {
+    await using testBed = await createTestBed({
+      clients: [{ clientId: "test-client" }],
+    });
+
+    const client = await adminClient.findClientByClientId(
+      "test-client",
+      testBed.realm,
+    );
+
+    await login(page, {
+      to: toClient({
+        realm: testBed.realm,
+        clientId: client.id!,
+        tab: "advanced",
+      }),
+    });
+
     await selectBrowserFlowInput(page, "browser");
     await selectDirectGrantInput(page, "docker auth");
     await assertBrowserFlowInput(page, "browser");
@@ -109,79 +197,74 @@ test.describe.serial("Advanced tab test", () => {
   });
 });
 
-test.describe.serial("Client Offline Session Max", () => {
-  const realmName = `client-offline-session-${uuidv4()}`;
-  const clientId = `clientId-${uuidv4()}`;
-
-  test.beforeAll(async () => {
-    await adminClient.createRealm(realmName, {
+test.describe("Client Offline Session Max", () => {
+  test("shows Client Offline Session Max when enabled in realm", async ({
+    page,
+  }) => {
+    await using testBed = await createTestBed({
       offlineSessionMaxLifespanEnabled: true,
+      clients: [{ clientId: "test-client" }],
     });
-    await adminClient.createClient({ clientId, realm: realmName });
-  });
-  test.afterAll(() => adminClient.deleteRealm(realmName));
 
-  test.beforeEach(async ({ page }) => {
-    await login(page);
-    await goToRealm(page, realmName);
-    await goToClients(page);
-    await clickTableRowItem(page, clientId);
-    await goToAdvancedTab(page);
-  });
+    const client = await adminClient.findClientByClientId(
+      "test-client",
+      testBed.realm,
+    );
 
-  test("Client Offline Session Max", async ({ page }) => {
+    await login(page, {
+      to: toClient({
+        realm: testBed.realm,
+        clientId: client.id!,
+        tab: "advanced",
+      }),
+    });
+
     await assertTokenLifespanClientOfflineSessionMaxVisible(page, true);
   });
 });
 
-test.describe.serial("OpenID for Verifiable Credentials", () => {
-  const realmName = `oid4vci-test-${uuidv4()}`;
-  const clientIdOpenIdConnect = `client-oidc-${uuidv4()}`;
-  test.beforeAll(async () => {
-    await adminClient.createRealm(realmName, {});
-    await adminClient.createClient({
-      clientId: clientIdOpenIdConnect,
-      realm: realmName,
-      protocol: "openid-connect",
-    });
-  });
-
-  test.afterAll(() => adminClient.deleteRealm(realmName));
-
-  test.describe.serial("with protocol openid-connect", () => {
-    test.beforeEach(async ({ page }) => {
-      await login(page);
-      await goToRealm(page, realmName);
-      await goToClients(page);
-      await clickTableRowItem(page, clientIdOpenIdConnect);
-
-      await page.waitForSelector('[data-testid="advancedTab"]', {
-        state: "visible",
-        timeout: 10000,
-      });
-      await page.getByTestId("advancedTab").click();
+test.describe("OpenID for Verifiable Credentials", () => {
+  test("handles OID4VC section visibility based on feature flag", async ({
+    page,
+  }) => {
+    await using testBed = await createTestBed({
+      clients: [{ clientId: "test-client-oidc", protocol: "openid-connect" }],
     });
 
-    test("should handle OID4VC section visibility based on feature flag", async ({
-      page,
-    }) => {
-      const toggleSwitch = page.locator("#attributes\\.oid4vci🍺enabled");
+    const client = await adminClient.findClientByClientId(
+      "test-client-oidc",
+      testBed.realm,
+    );
 
-      const isVisible = await toggleSwitch.isVisible();
-
-      if (isVisible) {
-        await toggleSwitch.scrollIntoViewIfNeeded();
-        await assertOid4vciEnabled(page, false);
-        await switchOid4vciEnabled(page, true);
-        await saveOid4vci(page);
-        await assertOid4vciEnabled(page, true);
-        await switchOid4vciEnabled(page, false);
-        await assertOid4vciEnabled(page, false);
-        await revertOid4vci(page);
-        await assertOid4vciEnabled(page, true);
-      } else {
-        await expect(toggleSwitch).toBeHidden();
-      }
+    await login(page, {
+      to: toClient({
+        realm: testBed.realm,
+        clientId: client.id!,
+        tab: "advanced",
+      }),
     });
+
+    await page.waitForSelector('[data-testid="advancedTab"]', {
+      state: "visible",
+      timeout: 10000,
+    });
+
+    const toggleSwitch = page.locator("#attributes\\.oid4vci🍺enabled");
+
+    const isVisible = await toggleSwitch.isVisible();
+
+    if (isVisible) {
+      await toggleSwitch.scrollIntoViewIfNeeded();
+      await assertOid4vciEnabled(page, false);
+      await switchOid4vciEnabled(page, true);
+      await saveOid4vci(page);
+      await assertOid4vciEnabled(page, true);
+      await switchOid4vciEnabled(page, false);
+      await assertOid4vciEnabled(page, false);
+      await revertOid4vci(page);
+      await assertOid4vciEnabled(page, true);
+    } else {
+      await expect(toggleSwitch).toBeHidden();
+    }
   });
 });

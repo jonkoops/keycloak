@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
-import { v4 as uuid } from "uuid";
-import adminClient from "../utils/AdminClient.ts";
+import { toClients } from "../../src/clients/routes/Clients.tsx";
+import { createTestBed } from "../support/testbed.ts";
 import { clickCancelButton, clickSaveButton } from "../utils/form.ts";
 import { login } from "../utils/login.ts";
 import {
@@ -8,7 +8,6 @@ import {
   assertNotificationMessage,
 } from "../utils/masthead.ts";
 import { confirmModal } from "../utils/modal.ts";
-import { goToClients, goToRealm } from "../utils/sidebar.ts";
 import {
   assertRowExists,
   clickRowKebabItem,
@@ -24,30 +23,31 @@ import {
   goToClientRegistrationTab,
 } from "./registration-policies.ts";
 
-test.describe.serial("Client registration policies tab", () => {
+test.describe("Client registration policies tab", () => {
   const tabName = "Client registration";
-  const realmName = `clients-details-realm-${uuid()}`;
 
-  test.beforeAll(() => adminClient.createRealm(realmName));
-  test.afterAll(() => adminClient.deleteRealm(realmName));
-
-  test.beforeEach(async ({ page }) => {
-    await login(page);
-    await goToRealm(page, realmName);
-    await goToClients(page);
-    await goToClientRegistrationTab(page);
-  });
-
-  test.describe.serial("Anonymous client policies subtab", () => {
+  test.describe("Anonymous client policies subtab", () => {
     const policyName = "newAnonymPolicy1";
     const policyNameUpdated = "policy2";
 
-    test("check anonymous clients list is not empty", async ({ page }) => {
+    test("checks anonymous clients list is not empty", async ({ page }) => {
+      await using testBed = await createTestBed();
+
+      await login(page, {
+        to: toClients({ realm: testBed.realm, tab: "client-registration" }),
+      });
+
       const rows = await getTableData(page, tabName);
       expect(rows.length).toBeGreaterThan(1);
     });
 
-    test("add anonymous client registration policy", async ({ page }) => {
+    test("adds anonymous client registration policy", async ({ page }) => {
+      await using testBed = await createTestBed();
+
+      await login(page, {
+        to: toClients({ realm: testBed.realm, tab: "client-registration" }),
+      });
+
       await clickCreateAnonymousPolicy(page);
       await createPolicy(page, "max-clients", { name: policyName });
       await clickSaveButton(page);
@@ -61,7 +61,13 @@ test.describe.serial("Client registration policies tab", () => {
       await assertRowExists(page, policyName);
     });
 
-    test("edit anonymous client registration policy", async ({ page }) => {
+    test("edits anonymous client registration policy", async ({ page }) => {
+      await using testBed = await createTestBed();
+
+      await login(page, {
+        to: toClients({ realm: testBed.realm, tab: "client-registration" }),
+      });
+
       await clickTableRowItem(page, "Consent Required");
       await fillPolicyForm(page, { name: policyNameUpdated });
       await clickSaveButton(page);
@@ -75,7 +81,13 @@ test.describe.serial("Client registration policies tab", () => {
       await assertRowExists(page, policyNameUpdated);
     });
 
-    test("delete anonymous client registration policy", async ({ page }) => {
+    test("deletes anonymous client registration policy", async ({ page }) => {
+      await using testBed = await createTestBed();
+
+      await login(page, {
+        to: toClients({ realm: testBed.realm, tab: "client-registration" }),
+      });
+
       await clickRowKebabItem(page, "Full Scope Disabled", "Delete");
       await confirmModal(page);
 
@@ -86,20 +98,32 @@ test.describe.serial("Client registration policies tab", () => {
     });
   });
 
-  test.describe.serial("Authenticated client policies subtab", () => {
+  test.describe("Authenticated client policies subtab", () => {
     const policyName = "newAuthPolicy1";
     const policyNameUpdated = "policy3";
 
-    test.beforeEach(async ({ page }) => {
-      await goToAuthenticatedSubTab(page);
-    });
+    test("checks authenticated clients list is not empty", async ({ page }) => {
+      await using testBed = await createTestBed();
 
-    test("check authenticated clients list is not empty", async ({ page }) => {
+      await login(page, {
+        to: toClients({ realm: testBed.realm, tab: "client-registration" }),
+      });
+
+      await goToAuthenticatedSubTab(page);
+
       const rows = await getTableData(page, tabName);
       expect(rows.length).toBeGreaterThan(1);
     });
 
-    test("add authenticated client registration policy", async ({ page }) => {
+    test("adds authenticated client registration policy", async ({ page }) => {
+      await using testBed = await createTestBed();
+
+      await login(page, {
+        to: toClients({ realm: testBed.realm, tab: "client-registration" }),
+      });
+
+      await goToAuthenticatedSubTab(page);
+
       await clickCreateAuthenticatedPolicy(page);
       await createPolicy(page, "scope", { name: policyName });
       await clickSaveButton(page);
@@ -113,7 +137,15 @@ test.describe.serial("Client registration policies tab", () => {
       await assertRowExists(page, policyName);
     });
 
-    test("edit authenticated client registration policy", async ({ page }) => {
+    test("edits authenticated client registration policy", async ({ page }) => {
+      await using testBed = await createTestBed();
+
+      await login(page, {
+        to: toClients({ realm: testBed.realm, tab: "client-registration" }),
+      });
+
+      await goToAuthenticatedSubTab(page);
+
       await clickTableRowItem(page, "Allowed Protocol Mapper Types");
       await fillPolicyForm(page, { name: policyNameUpdated });
       await clickSaveButton(page);
@@ -126,9 +158,17 @@ test.describe.serial("Client registration policies tab", () => {
       await assertRowExists(page, policyNameUpdated);
     });
 
-    test("delete authenticated client registration policy", async ({
+    test("deletes authenticated client registration policy", async ({
       page,
     }) => {
+      await using testBed = await createTestBed();
+
+      await login(page, {
+        to: toClients({ realm: testBed.realm, tab: "client-registration" }),
+      });
+
+      await goToAuthenticatedSubTab(page);
+
       await clickRowKebabItem(page, "Allowed Client Scopes", "Delete");
       await confirmModal(page);
 
@@ -140,15 +180,14 @@ test.describe.serial("Client registration policies tab", () => {
   });
 });
 
-test.describe
-  .serial("Accessibility tests for client registration policies", () => {
-  test.beforeEach(async ({ page }) => {
-    await login(page);
-    await goToClients(page);
-    await goToClientRegistrationTab(page);
-  });
+test.describe("Accessibility tests for client registration policies", () => {
+  test("checks accessibility violations", async ({ page }) => {
+    await using testBed = await createTestBed();
 
-  test("Check accessibility violations", async ({ page }) => {
+    await login(page, {
+      to: toClients({ realm: testBed.realm, tab: "client-registration" }),
+    });
+
     await assertAxeViolations(page);
   });
 });
