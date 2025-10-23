@@ -1,61 +1,48 @@
 import { expect, test } from "@playwright/test";
-import { v4 as uuid } from "uuid";
+import { toClient } from "../../src/clients/routes/Client.tsx";
+import { toClients } from "../../src/clients/routes/Clients.tsx";
+import { createTestBed } from "../support/testbed.ts";
 import adminClient from "../utils/AdminClient.ts";
 import { assertRequiredFieldError } from "../utils/form.ts";
 import { login } from "../utils/login.ts";
 import { assertNotificationMessage } from "../utils/masthead.ts";
-import { goToClients, goToRealm } from "../utils/sidebar.ts";
-import { clickTableRowItem, searchItem } from "../utils/table.ts";
 import { continueNext, createClient, save } from "./utils.ts";
 import {
   assertKeyForCodeExchangeInput,
   selectKeyForCodeExchangeInput,
 } from "./details.ts";
 
-test.describe.serial("Clients details test", () => {
-  const realmName = `clients-details-realm-${uuid()}`;
-  const clientId = `client-details-${uuid()}`;
+test.describe("Clients details", () => {
+  test("tests clientId required", async ({ page }) => {
+    await using testBed = await createTestBed();
 
-  test.beforeAll(async () => {
-    await adminClient.createRealm(realmName);
-    await adminClient.createClient({
-      clientId,
-      protocol: "openid-connect",
-      publicClient: false,
-      realm: realmName,
-    });
-  });
+    await login(page, { to: toClients({ realm: testBed.realm }) });
 
-  test.afterAll(async () => {
-    await adminClient.deleteRealm(realmName);
-    await adminClient.deleteClient(clientId);
-  });
-
-  test.beforeEach(async ({ page }) => {
-    await login(page);
-    await goToRealm(page, realmName);
-    await goToClients(page);
-    await searchItem(page, "Search for client", clientId);
-  });
-
-  test("Should test clientId required", async ({ page }) => {
     await createClient(page);
     await assertRequiredFieldError(page, "clientId");
   });
 
-  test("Cancel create should return to clients", async ({ page }) => {
+  test("cancels create and returns to clients", async ({ page }) => {
+    await using testBed = await createTestBed();
+
+    await login(page, { to: toClients({ realm: testBed.realm }) });
+
     await createClient(
       page,
-      { clientId },
+      { clientId: "test-client" },
       async () => await page.getByRole("button", { name: "Cancel" }).click(),
     );
 
     await expect(page).not.toHaveURL("add-client");
   });
 
-  test("Should be able to create a client", async ({ page }) => {
+  test("creates a client", async ({ page }) => {
+    await using testBed = await createTestBed();
+
+    await login(page, { to: toClients({ realm: testBed.realm }) });
+
     await createClient(page, {
-      clientId: `created-client-${uuid()}`,
+      clientId: "created-client",
       name: "ClientName",
       description: "ClientDescription",
     });
@@ -66,8 +53,24 @@ test.describe.serial("Clients details test", () => {
     await assertNotificationMessage(page, "Client created successfully");
   });
 
-  test("Should be able to update a client", async ({ page }) => {
-    await clickTableRowItem(page, clientId);
+  test("updates a client", async ({ page }) => {
+    await using testBed = await createTestBed({
+      clients: [{ clientId: "test-client" }],
+    });
+
+    const client = await adminClient.findClientByClientId(
+      "test-client",
+      testBed.realm,
+    );
+
+    await login(page, {
+      to: toClient({
+        realm: testBed.realm,
+        clientId: client.id!,
+        tab: "settings",
+      }),
+    });
+
     await selectKeyForCodeExchangeInput(page, "S256");
     await save(page);
     await assertNotificationMessage(page, "Client successfully updated");

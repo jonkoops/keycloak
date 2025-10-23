@@ -1,4 +1,6 @@
 import { test } from "@playwright/test";
+import { toClient } from "../../src/clients/routes/Client.tsx";
+import { createTestBed } from "../support/testbed.ts";
 import adminClient from "../utils/AdminClient.ts";
 import { clickSaveButton } from "../utils/form.ts";
 import { login } from "../utils/login.ts";
@@ -6,12 +8,7 @@ import {
   assertAxeViolations,
   assertNotificationMessage,
 } from "../utils/masthead.ts";
-import { goToClients, goToRealm } from "../utils/sidebar.ts";
-import {
-  assertRowExists,
-  clickTableRowItem,
-  searchItem,
-} from "../utils/table.ts";
+import { assertRowExists, clickTableRowItem } from "../utils/table.ts";
 import {
   assertClipboardHasText,
   assertDefaultResource,
@@ -24,7 +21,6 @@ import {
   createResource,
   deletePolicy,
   fillForm,
-  goToAuthorizationTab,
   goToExportSubTab,
   goToPermissionsSubTab,
   goToPoliciesSubTab,
@@ -35,39 +31,54 @@ import {
   setPolicy,
 } from "./authorization.ts";
 
-test.describe.serial("Client authentication subtab", () => {
-  const clientId = `client-authentication-${crypto.randomUUID()}`;
-
-  test.beforeAll(async () => {
-    await adminClient.createClient({
-      protocol: "openid-connect",
-      clientId,
-      publicClient: false,
-      authorizationServicesEnabled: true,
-      serviceAccountsEnabled: true,
-      standardFlowEnabled: true,
+test.describe("Client authentication subtab", () => {
+  test("updates the resource server settings", async ({ page }) => {
+    await using testBed = await createTestBed({
+      clients: [
+        {
+          clientId: "test-client",
+          authorizationServicesEnabled: true,
+          serviceAccountsEnabled: true,
+        },
+      ],
     });
-  });
 
-  test.afterAll(async () => {
-    await adminClient.deleteClient(clientId);
-  });
+    const client = await adminClient.findClientByClientId(
+      "test-client",
+      testBed.realm,
+    );
 
-  test.beforeEach(async ({ page }) => {
-    await login(page);
-    await goToClients(page);
-    await searchItem(page, "Search for client", clientId);
-    await clickTableRowItem(page, clientId);
-    await goToAuthorizationTab(page);
-  });
+    await login(page, {
+      to: toClient({
+        realm: testBed.realm,
+        clientId: client.id!,
+        tab: "authorization",
+      }),
+    });
 
-  test("Should update the resource server settings", async ({ page }) => {
     await setPolicy(page, "DISABLED");
     await clickAuthenticationSaveButton(page);
     await assertNotificationMessage(page, "Resource successfully updated");
   });
 
-  test("Should create a resource", async ({ page }) => {
+  test("creates a resource", async ({ page }) => {
+    await using testBed = await createTestBed();
+
+    const { id: clientId } = await adminClient.createClient({
+      clientId: "test-client",
+      authorizationServicesEnabled: true,
+      serviceAccountsEnabled: true,
+      realm: testBed.realm,
+    });
+
+    await login(page, {
+      to: toClient({
+        realm: testBed.realm,
+        clientId: clientId!,
+        tab: "authorization",
+      }),
+    });
+
     await goToResourcesSubTab(page);
     await assertDefaultResource(page);
     await createResource(page, {
@@ -81,7 +92,24 @@ test.describe.serial("Client authentication subtab", () => {
     await assertNotificationMessage(page, "Resource created successfully");
   });
 
-  test("Edit a resource", async ({ page }) => {
+  test("edits a resource", async ({ page }) => {
+    await using testBed = await createTestBed();
+
+    const { id: clientId } = await adminClient.createClient({
+      clientId: "test-client",
+      authorizationServicesEnabled: true,
+      serviceAccountsEnabled: true,
+      realm: testBed.realm,
+    });
+
+    await login(page, {
+      to: toClient({
+        realm: testBed.realm,
+        clientId: clientId!,
+        tab: "authorization",
+      }),
+    });
+
     await goToResourcesSubTab(page);
     await clickTableRowItem(page, "Default Resource");
 
@@ -91,7 +119,30 @@ test.describe.serial("Client authentication subtab", () => {
     await assertNotificationMessage(page, "Resource successfully updated");
   });
 
-  test("Should create a scope", async ({ page }) => {
+  test("creates a scope", async ({ page }) => {
+    await using testBed = await createTestBed({
+      clients: [
+        {
+          clientId: "test-client",
+          authorizationServicesEnabled: true,
+          serviceAccountsEnabled: true,
+        },
+      ],
+    });
+
+    const client = await adminClient.findClientByClientId(
+      "test-client",
+      testBed.realm,
+    );
+
+    await login(page, {
+      to: toClient({
+        realm: testBed.realm,
+        clientId: client.id!,
+        tab: "authorization",
+      }),
+    });
+
     await goToScopesSubTab(page);
     await createAuthorizationScope(page, {
       name: "The scope",
@@ -108,7 +159,24 @@ test.describe.serial("Client authentication subtab", () => {
     await assertRowExists(page, "The scope");
   });
 
-  test("Should create a permission", async ({ page }) => {
+  test("creates a permission", async ({ page }) => {
+    await using testBed = await createTestBed();
+
+    const { id: clientId } = await adminClient.createClient({
+      clientId: "test-client",
+      authorizationServicesEnabled: true,
+      serviceAccountsEnabled: true,
+      realm: testBed.realm,
+    });
+
+    await login(page, {
+      to: toClient({
+        realm: testBed.realm,
+        clientId: clientId!,
+        tab: "authorization",
+      }),
+    });
+
     await goToPermissionsSubTab(page);
 
     await createPermission(page, "resource", {
@@ -124,7 +192,24 @@ test.describe.serial("Client authentication subtab", () => {
     );
   });
 
-  test("Should create a policy", async ({ page }) => {
+  test("creates a policy", async ({ page }) => {
+    await using testBed = await createTestBed();
+
+    const { id: clientId } = await adminClient.createClient({
+      clientId: "test-client",
+      authorizationServicesEnabled: true,
+      serviceAccountsEnabled: true,
+      realm: testBed.realm,
+    });
+
+    await login(page, {
+      to: toClient({
+        realm: testBed.realm,
+        clientId: clientId!,
+        tab: "authorization",
+      }),
+    });
+
     await goToPoliciesSubTab(page);
     await createPolicy(page, "Regex", {
       name: "Regex policy",
@@ -137,86 +222,176 @@ test.describe.serial("Client authentication subtab", () => {
     await assertNotificationMessage(page, "Successfully created the policy");
   });
 
-  test("Should delete a policy", async ({ page }) => {
+  test("deletes a policy", async ({ page }) => {
+    await using testBed = await createTestBed();
+
+    const { id: clientId } = await adminClient.createClient({
+      clientId: "test-client",
+      authorizationServicesEnabled: true,
+      serviceAccountsEnabled: true,
+      realm: testBed.realm,
+    });
+
+    await login(page, {
+      to: toClient({
+        realm: testBed.realm,
+        clientId: clientId!,
+        tab: "authorization",
+      }),
+    });
+
     await goToPoliciesSubTab(page);
     await deletePolicy(page, "Default Policy");
 
     await assertNotificationMessage(page, "The Policy successfully deleted");
   });
 
-  test("Should create a client policy", async ({ page }) => {
+  test("creates a client policy", async ({ page }) => {
+    await using testBed = await createTestBed();
+
+    // Create a client to use in the policy
+    await adminClient.createClient({
+      protocol: "openid-connect",
+      clientId: "policy-target-client",
+      realm: testBed.realm,
+    });
+
+    const { id: clientId } = await adminClient.createClient({
+      clientId: "test-client",
+      authorizationServicesEnabled: true,
+      serviceAccountsEnabled: true,
+      realm: testBed.realm,
+    });
+
+    await login(page, {
+      to: toClient({
+        realm: testBed.realm,
+        clientId: clientId!,
+        tab: "authorization",
+      }),
+    });
+
     await goToPoliciesSubTab(page);
     await createPolicy(page, "Client", {
       name: "Client policy",
       description: "Extra client field",
     });
 
-    await inputClient(page, "master-realm");
+    await inputClient(page, "policy-target-client");
     await clickSaveButton(page);
     await assertNotificationMessage(page, "Successfully created the policy");
   });
 
-  test("Should copy auth details", async ({ page, context, browserName }) => {
-    test.skip(browserName === "firefox", "Still working on it");
-    await context.grantPermissions(["clipboard-write", "clipboard-read"]);
+  test("copies auth details", async ({ page, context, browserName }) => {
+    // Firefox doesn't support clipboard permissions in Playwright
+    if (browserName !== "firefox") {
+      await context.grantPermissions(["clipboard-write", "clipboard-read"]);
+    }
+
+    await using testBed = await createTestBed({
+      clients: [
+        {
+          clientId: "test-client",
+          authorizationServicesEnabled: true,
+          serviceAccountsEnabled: true,
+        },
+      ],
+    });
+
+    const client = await adminClient.findClientByClientId(
+      "test-client",
+      testBed.realm,
+    );
+
+    await login(page, {
+      to: toClient({
+        realm: testBed.realm,
+        clientId: client.id!,
+        tab: "authorization",
+      }),
+    });
+
     await goToExportSubTab(page);
     await clickCopyButton(page);
     await assertNotificationMessage(page, "Authorization details copied.");
     await assertClipboardHasText(page);
   });
 
-  test("Should export auth details", async ({ page }) => {
+  test("exports auth details", async ({ page }) => {
+    await using testBed = await createTestBed({
+      clients: [
+        {
+          clientId: "test-client",
+          authorizationServicesEnabled: true,
+          serviceAccountsEnabled: true,
+        },
+      ],
+    });
+
+    const client = await adminClient.findClientByClientId(
+      "test-client",
+      testBed.realm,
+    );
+
+    await login(page, {
+      to: toClient({
+        realm: testBed.realm,
+        clientId: client.id!,
+        tab: "authorization",
+      }),
+    });
+
     await goToExportSubTab(page);
 
     await assertDownload(page);
   });
 });
 
-test.describe
-  .serial("Client authorization tab access for view-realm-authorization", () => {
-  const clientId = `realm-view-authz-client-${crypto.randomUUID()}`;
-
-  test.beforeAll(async () => {
-    await adminClient.createRealm("realm-view-authz");
-    const testUser = await adminClient.createUser({
-      // Create user in master realm
-      username: "test-view-authz-user",
+test.describe("Client authorization tab access for view-realm-authorization", () => {
+  test("views authorization tab", async ({ page }) => {
+    await using testBed = await createTestBed({
       enabled: true,
-      credentials: [{ type: "password", value: "password" }],
+      users: [
+        {
+          username: "test-user",
+          enabled: true,
+          email: "test@example.com",
+          firstName: "Test",
+          lastName: "User",
+          credentials: [{ type: "password", value: "password" }],
+        },
+      ],
     });
+
+    const testUser = await adminClient.findUserByUsername(
+      testBed.realm,
+      "test-user",
+    );
 
     await adminClient.addClientRoleToUser(
       testUser.id!,
-      "realm-view-authz-realm",
+      "realm-management",
       ["view-realm", "view-users", "view-authorization", "view-clients"],
+      testBed.realm,
     );
-    await adminClient.createClient({
-      realm: "realm-view-authz",
-      clientId,
+
+    const { id: clientId } = await adminClient.createClient({
+      clientId: "test-client",
       authorizationServicesEnabled: true,
       serviceAccountsEnabled: true,
-      standardFlowEnabled: true,
+      realm: testBed.realm,
     });
-  });
 
-  test.afterAll(async () => {
-    await adminClient.deleteUser("test-view-authz-user");
-    await adminClient.deleteRealm("realm-view-authz");
-  });
-
-  test("Should view authorization tab", async ({ page }) => {
     await login(page, {
-      username: "test-view-authz-user",
+      realm: testBed.realm,
+      username: "test-user",
       password: "password",
+      to: toClient({
+        realm: testBed.realm,
+        clientId: clientId!,
+        tab: "authorization",
+      }),
     });
-
-    await goToRealm(page, "realm-view-authz");
-    await page.reload();
-    await goToClients(page);
-
-    await searchItem(page, "Search for client", clientId);
-    await clickTableRowItem(page, clientId);
-    await goToAuthorizationTab(page);
 
     await goToResourcesSubTab(page);
     await clickTableRowItem(page, "Default Resource");
@@ -228,32 +403,31 @@ test.describe
   });
 });
 
-test.describe.serial("Accessibility tests for client authorization", () => {
-  const clientId = `realm-view-authz-client-${crypto.randomUUID()}`;
-  test.beforeAll(() =>
-    adminClient.createClient({
-      protocol: "openid-connect",
-      clientId,
-      publicClient: false,
-      authorizationServicesEnabled: true,
-      serviceAccountsEnabled: true,
-      standardFlowEnabled: true,
-    }),
-  );
+test.describe("Accessibility tests for client authorization", () => {
+  test("checks a11y violations on load", async ({ page }) => {
+    await using testBed = await createTestBed({
+      clients: [
+        {
+          clientId: "test-client",
+          authorizationServicesEnabled: true,
+          serviceAccountsEnabled: true,
+        },
+      ],
+    });
 
-  test.afterAll(() => adminClient.deleteClient(clientId));
+    const client = await adminClient.findClientByClientId(
+      "test-client",
+      testBed.realm,
+    );
 
-  test.beforeEach(async ({ page }) => {
-    await login(page);
-    await goToClients(page);
-    await searchItem(page, "Search for client", clientId);
-    await clickTableRowItem(page, clientId);
-    await goToAuthorizationTab(page);
-  });
+    await login(page, {
+      to: toClient({
+        realm: testBed.realm,
+        clientId: client.id!,
+        tab: "authorization",
+      }),
+    });
 
-  test("Check a11y violations on load/ client authorization", async ({
-    page,
-  }) => {
     await assertAxeViolations(page);
   });
 });

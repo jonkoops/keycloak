@@ -1,10 +1,10 @@
 import { expect, test } from "@playwright/test";
-import adminClient from "../utils/AdminClient.ts";
+import { toClients } from "../../src/clients/routes/Clients.tsx";
+import { createTestBed } from "../support/testbed.ts";
 import { clickSaveButton } from "../utils/form.ts";
 import { login } from "../utils/login.ts";
 import { assertNotificationMessage } from "../utils/masthead.ts";
 import { assertModalTitle, confirmModal } from "../utils/modal.ts";
-import { goToClients } from "../utils/sidebar.ts";
 import {
   assertNoResults,
   clearAllFilters,
@@ -23,26 +23,21 @@ import {
   closeModal,
   fillNewTokenData,
   goToCreateFromEmptyList,
-  goToInitialAccessTokenTab,
 } from "./initial-access.ts";
 
-test.describe.serial("Client initial access tokens", () => {
+test.describe("Client initial access tokens", () => {
   const tableName = "Initial access token";
   const placeHolder = "Search token";
   const countCellNumber = 3;
   const remainingCountCellNumber = 4;
 
-  test.beforeEach(async ({ page }) => {
-    await login(page);
-    await goToClients(page);
-  });
+  test("can't be created with 0 days and count", async ({ page }) => {
+    await using testBed = await createTestBed();
 
-  test.afterAll(async () => adminClient.deleteAllTokens());
+    await login(page, {
+      to: toClients({ realm: testBed.realm, tab: "initial-access-token" }),
+    });
 
-  test("Initial access token can't be created with 0 days and count", async ({
-    page,
-  }) => {
-    await goToInitialAccessTokenTab(page);
     await assertInitialAccessTokensIsEmpty(page);
     await goToCreateFromEmptyList(page);
     await fillNewTokenData(page, 0, 0);
@@ -51,11 +46,22 @@ test.describe.serial("Client initial access tokens", () => {
     await assertSaveButtonIsDisabled(page);
   });
 
-  test("Initial access token", async ({ page, context, browserName }) => {
-    test.skip(browserName === "firefox", "Still working on it");
-    await context.grantPermissions(["clipboard-write", "clipboard-read"]);
+  test("creates and deletes initial access tokens", async ({
+    page,
+    context,
+    browserName,
+  }) => {
+    // Firefox doesn't support clipboard permissions in Playwright
+    if (browserName !== "firefox") {
+      await context.grantPermissions(["clipboard-write", "clipboard-read"]);
+    }
 
-    await goToInitialAccessTokenTab(page);
+    await using testBed = await createTestBed();
+
+    await login(page, {
+      to: toClients({ realm: testBed.realm, tab: "initial-access-token" }),
+    });
+
     await assertInitialAccessTokensIsEmpty(page);
     await goToCreateFromEmptyList(page);
     await fillNewTokenData(page, 1, 3);
