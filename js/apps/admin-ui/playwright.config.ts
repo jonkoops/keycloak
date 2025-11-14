@@ -10,7 +10,7 @@ export default defineConfig({
   fullyParallel: true,
   // The admin console tests are not optimized for parallel execution, long-term
   // this should be addressed and 'workers' should be returned to the default value.
-  workers: 1,
+  // workers: 1,
   forbidOnly: !!process.env.CI,
   reporter: process.env.CI ? [["github"], ["html"]] : "list",
 

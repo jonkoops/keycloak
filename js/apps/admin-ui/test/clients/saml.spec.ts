@@ -1,12 +1,11 @@
 import { test } from "@playwright/test";
-import { v4 as uuid } from "uuid";
+import { toClient } from "../../src/clients/routes/Client.tsx";
 import adminClient from "../utils/AdminClient.ts";
+import { createTestBed } from "../support/testbed.ts";
 import { switchOff, switchOn } from "../utils/form.ts";
 import { login } from "../utils/login.ts";
 import { assertNotificationMessage } from "../utils/masthead.ts";
 import { assertModalTitle, cancelModal, confirmModal } from "../utils/modal.ts";
-import { goToClients } from "../utils/sidebar.ts";
-import { clickTableRowItem } from "../utils/table.ts";
 import { goToAdvancedTab, revertFineGrain, saveFineGrain } from "./advanced.ts";
 import {
   assertCertificates,
@@ -36,27 +35,24 @@ import {
   setTermsOfServiceUrl,
 } from "./saml.ts";
 
-test.describe.serial("Fine Grain SAML Endpoint Configuration", () => {
-  const clientName = `saml-advanced-tab-${uuid()}`;
-
-  test.beforeAll(() =>
-    adminClient.createClient({
+test.describe("Fine Grain SAML Endpoint Configuration", () => {
+  test("sets Terms of service URL", async ({ page }) => {
+    await using testBed = await createTestBed();
+    const { id: clientId } = await adminClient.createClient({
+      realm: testBed.realm,
       protocol: "saml",
-      clientId: clientName,
+      clientId: "saml-test-client",
       publicClient: false,
-    }),
-  );
+    });
 
-  test.afterAll(() => adminClient.deleteClient(clientName));
+    await login(page, {
+      to: toClient({
+        realm: testBed.realm,
+        clientId: clientId!,
+        tab: "advanced",
+      }),
+    });
 
-  test.beforeEach(async ({ page }) => {
-    await login(page);
-    await goToClients(page);
-    await clickTableRowItem(page, clientName);
-    await goToAdvancedTab(page);
-  });
-
-  test("should set Terms of service URL", async ({ page }) => {
     const termsOfServiceUrl = "http://some.url/terms-of-service.html";
 
     // Set and save URL
@@ -72,9 +68,23 @@ test.describe.serial("Fine Grain SAML Endpoint Configuration", () => {
     await assertTermsOfServiceUrl(page, termsOfServiceUrl);
   });
 
-  test("should show error for invalid terms of service URL", async ({
-    page,
-  }) => {
+  test("shows error for invalid terms of service URL", async ({ page }) => {
+    await using testBed = await createTestBed();
+    const { id: clientId } = await adminClient.createClient({
+      realm: testBed.realm,
+      protocol: "saml",
+      clientId: "saml-test-client",
+      publicClient: false,
+    });
+
+    await login(page, {
+      to: toClient({
+        realm: testBed.realm,
+        clientId: clientId!,
+        tab: "advanced",
+      }),
+    });
+
     await setTermsOfServiceUrl(page, "not a url");
     await saveFineGrain(page);
     await assertNotificationMessage(
@@ -84,39 +94,51 @@ test.describe.serial("Fine Grain SAML Endpoint Configuration", () => {
   });
 });
 
-test.describe.serial("Clients SAML tests", () => {
-  const clientId = "saml";
-
-  const clientName = `saml-settings-${uuid()}`;
-
-  test.beforeAll(() =>
-    adminClient.createClient({
+test.describe("Clients SAML tests", () => {
+  test("displays the saml sections on details screen", async ({ page }) => {
+    await using testBed = await createTestBed();
+    const { id: clientId } = await adminClient.createClient({
+      realm: testBed.realm,
       protocol: "saml",
-      clientId: clientName,
-    }),
-  );
+      clientId: "saml-test-client",
+    });
 
-  test.afterAll(() => adminClient.deleteClient(clientName));
+    await login(page, {
+      to: toClient({ realm: testBed.realm, clientId: clientId!, tab: "settings" }),
+    });
 
-  test.beforeEach(async ({ page }) => {
-    await login(page);
-    await goToClients(page);
-    await clickTableRowItem(page, clientId);
-  });
-
-  test("should display the saml sections on details screen", async ({
-    page,
-  }) => {
     await assertSamlClientDetails(page);
   });
 
-  test("should save force name id format", async ({ page }) => {
+  test("saves force name id format", async ({ page }) => {
+    await using testBed = await createTestBed();
+    const { id: clientId } = await adminClient.createClient({
+      realm: testBed.realm,
+      protocol: "saml",
+      clientId: "saml-test-client",
+    });
+
+    await login(page, {
+      to: toClient({ realm: testBed.realm, clientId: clientId!, tab: "settings" }),
+    });
+
     await clickPostBinding(page);
     await saveSamlSettings(page);
     await assertNotificationMessage(page, "Client successfully updated");
   });
 
-  test("should not disable signature when cancel", async ({ page }) => {
+  test("does not disable signature when cancel", async ({ page }) => {
+    await using testBed = await createTestBed();
+    const { id: clientId } = await adminClient.createClient({
+      realm: testBed.realm,
+      protocol: "saml",
+      clientId: "saml-test-client",
+    });
+
+    await login(page, {
+      to: toClient({ realm: testBed.realm, clientId: clientId!, tab: "settings" }),
+    });
+
     await goToKeysTab(page);
     await clickClientSignature(page);
     await assertModalTitle(page, 'Disable "Client signature required"');
@@ -124,7 +146,18 @@ test.describe.serial("Clients SAML tests", () => {
     await assertCertificates(page);
   });
 
-  test("should disable client signature", async ({ page }) => {
+  test("disables client signature", async ({ page }) => {
+    await using testBed = await createTestBed();
+    const { id: clientId } = await adminClient.createClient({
+      realm: testBed.realm,
+      protocol: "saml",
+      clientId: "saml-test-client",
+    });
+
+    await login(page, {
+      to: toClient({ realm: testBed.realm, clientId: clientId!, tab: "settings" }),
+    });
+
     await goToKeysTab(page);
     await clickClientSignature(page);
     await assertModalTitle(page, 'Disable "Client signature required"');
@@ -133,7 +166,18 @@ test.describe.serial("Clients SAML tests", () => {
     await assertCertificates(page);
   });
 
-  test("should enable Encryption keys config", async ({ page }) => {
+  test("enables Encryption keys config", async ({ page }) => {
+    await using testBed = await createTestBed();
+    const { id: clientId } = await adminClient.createClient({
+      realm: testBed.realm,
+      protocol: "saml",
+      clientId: "saml-test-client",
+    });
+
+    await login(page, {
+      to: toClient({ realm: testBed.realm, clientId: clientId!, tab: "settings" }),
+    });
+
     // enable encryption on keys tab
     await goToKeysTab(page);
     await clickEncryptionAssertions(page);
@@ -187,7 +231,18 @@ test.describe.serial("Clients SAML tests", () => {
     await assertEncryptionMaskGenerationFunctionInputVisible(page, false);
   });
 
-  test("should check SAML capabilities", async ({ page }) => {
+  test("checks SAML capabilities", async ({ page }) => {
+    await using testBed = await createTestBed();
+    const { id: clientId } = await adminClient.createClient({
+      realm: testBed.realm,
+      protocol: "saml",
+      clientId: "saml-test-client",
+    });
+
+    await login(page, {
+      to: toClient({ realm: testBed.realm, clientId: clientId!, tab: "settings" }),
+    });
+
     // Assert SAML Capabilities switches exist
     const switches = [
       ['[data-testid="attributes.saml_force_name_id_format"]', "on"],
@@ -209,9 +264,19 @@ test.describe.serial("Clients SAML tests", () => {
     await assertNameIdFormatDropdown(page);
   });
 
-  test("should check access settings", async ({ page }) => {
-    const validUrl =
-      "http://localhost:8180/realms/master/protocol/" + clientId + "/clients/";
+  test("checks access settings", async ({ page }) => {
+    await using testBed = await createTestBed();
+    const { id: clientId } = await adminClient.createClient({
+      realm: testBed.realm,
+      protocol: "saml",
+      clientId: "saml-client",
+    });
+
+    await login(page, {
+      to: toClient({ realm: testBed.realm, clientId: clientId!, tab: "settings" }),
+    });
+
+    const validUrl = `http://localhost:8180/realms/${testBed.realm}/protocol/saml-client/clients/`;
     const invalidUrlErrorRoot =
       "Client could not be updated: invalid_inputRoot URL is not a valid URL";
     const invalidUrlErrorBase =

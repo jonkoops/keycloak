@@ -1,11 +1,11 @@
 import { expect, test } from "@playwright/test";
-import { v4 as uuid } from "uuid";
+import { toClient } from "../../src/clients/routes/Client.tsx";
 import { selectChangeType } from "../client-scope/main.ts";
 import adminClient from "../utils/AdminClient.ts";
+import { createTestBed } from "../support/testbed.ts";
 import { login } from "../utils/login.ts";
 import { assertNotificationMessage } from "../utils/masthead.ts";
 import { assertModalTitle, confirmModal } from "../utils/modal.ts";
-import { goToClients, goToRealm } from "../utils/sidebar.ts";
 import {
   assertEmptyTable,
   assertRowExists,
@@ -13,7 +13,6 @@ import {
   clickNextPageButton,
   clickRowKebabItem,
   clickSelectRow,
-  clickTableRowItem,
   clickTableToolbarItem,
   getTableData,
   searchItem,
@@ -46,18 +45,13 @@ type ClientScope = {
   };
 };
 
-test.describe.serial("Client details - Client scopes subtab", () => {
-  const clientId = "client-scopes-subtab-test";
-  const clientScopeName = "client-scope-test";
-  const clientScopeNameDefaultType = "client-scope-test-default-type";
-  const clientScopeNameOptionalType = "client-scope-test-optional-type";
+test.describe("Client details - Client scopes subtab", () => {
   const msgScopeMappingRemoved = "Scope mapping successfully removed";
-  const realmName = `clients-realm-${uuid()}`;
   const placeHolder = "Search by name";
   const tableName = "Client scopes";
 
   const clientScope: ClientScope = {
-    name: clientScopeName,
+    name: "",
     description: "",
     protocol: "openid-connect",
     attributes: {
@@ -68,165 +62,336 @@ test.describe.serial("Client details - Client scopes subtab", () => {
     },
   };
 
-  test.beforeAll(async () => {
-    await adminClient.createRealm(realmName);
-    await adminClient.createClient({
-      realm: realmName,
-      clientId,
+  test("lists client scopes", async ({ page }) => {
+    await using testBed = await createTestBed();
+    const testClientId = "test-client";
+    const { id } = await adminClient.createClient({
+      realm: testBed.realm,
+      clientId: testClientId,
       protocol: "openid-connect",
       publicClient: false,
     });
+    // Create and add client scopes
     for (let i = 0; i < 5; i++) {
-      clientScope.name = clientScopeName + i;
-      await adminClient.createClientScope({ ...clientScope, realm: realmName });
+      const scopeName = `client-scope-${i}`;
+      await adminClient.createClientScope({
+        ...clientScope,
+        name: scopeName,
+        realm: testBed.realm,
+      });
       await adminClient.addDefaultClientScopeInClient(
-        clientScopeName + i,
-        clientId,
-        realmName,
+        scopeName,
+        testClientId,
+        testBed.realm,
       );
     }
-    clientScope.name = clientScopeNameDefaultType;
-    await adminClient.createClientScope({ ...clientScope, realm: realmName });
-    clientScope.name = clientScopeNameOptionalType;
-    await adminClient.createClientScope({ ...clientScope, realm: realmName });
-  });
 
-  test.afterAll(() => adminClient.deleteRealm(realmName));
+    await login(page, {
+      to: toClient({
+        realm: testBed.realm,
+        clientId: id!,
+        tab: "clientScopes",
+      }),
+    });
 
-  test.beforeEach(async ({ page }) => {
-    await login(page);
-    await goToRealm(page, realmName);
-    await goToClients(page);
-    await searchItem(page, "Search for client", clientId);
-    await clickTableRowItem(page, clientId);
-    await goToClientScopesTab(page);
-  });
-
-  test("Should list client scopes", async ({ page }) => {
     const rows = await getTableData(page, tableName);
     expect(rows.length).toBeGreaterThan(2);
-    await assertRowExists(page, clientScopeName + "0");
+    await assertRowExists(page, "client-scope-0");
   });
 
-  test("Should search existing client scope by name", async ({ page }) => {
-    await searchItem(page, placeHolder, clientScopeName + "0");
-    await assertRowExists(page, clientScopeName + "0");
+  test("searches existing client scope by name", async ({ page }) => {
+    await using testBed = await createTestBed();
+    const testClientId = "test-client";
+    const { id } = await adminClient.createClient({
+      realm: testBed.realm,
+      clientId: testClientId,
+      protocol: "openid-connect",
+      publicClient: false,
+    });
+    await adminClient.createClientScope({
+      ...clientScope,
+      name: "searchable-scope",
+      realm: testBed.realm,
+    });
+    await adminClient.addDefaultClientScopeInClient(
+      "searchable-scope",
+      testClientId,
+      testBed.realm,
+    );
+
+    await login(page, {
+      to: toClient({
+        realm: testBed.realm,
+        clientId: id!,
+        tab: "clientScopes",
+      }),
+    });
+
+    await searchItem(page, placeHolder, "searchable-scope");
+    await assertRowExists(page, "searchable-scope");
     await assertTableRowsLength(page, tableName, 1);
   });
 
-  test("Should search non-existent client scope by name", async ({ page }) => {
+  test("searches non-existent client scope by name", async ({ page }) => {
+    await using testBed = await createTestBed();
+    const { id: clientId } = await adminClient.createClient({
+      realm: testBed.realm,
+      clientId: "test-client",
+      protocol: "openid-connect",
+      publicClient: false,
+    });
+
+    await login(page, {
+      to: toClient({
+        realm: testBed.realm,
+        clientId: clientId!,
+        tab: "clientScopes",
+      }),
+    });
+
     await searchItem(page, placeHolder, "non-existent-item");
     await assertEmptyTable(page);
   });
 
-  test("Should add client scope with optional assigned type", async ({
-    page,
-  }) => {
+  test("adds client scope with optional assigned type", async ({ page }) => {
+    await using testBed = await createTestBed();
+    const testClientId = "test-client";
+    const { id: clientId } = await adminClient.createClient({
+      realm: testBed.realm,
+      clientId: testClientId,
+      protocol: "openid-connect",
+      publicClient: false,
+    });
+    await adminClient.createClientScope({
+      ...clientScope,
+      name: "optional-scope",
+      realm: testBed.realm,
+    });
+
+    await login(page, {
+      to: toClient({
+        realm: testBed.realm,
+        clientId: clientId!,
+        tab: "clientScopes",
+      }),
+    });
+
     await clickAddClientScope(page);
-    await assertModalTitle(page, `Add client scopes to ${clientId}`);
-    await clickSelectRow(
-      page,
-      "Choose a mapper type",
-      clientScopeNameOptionalType,
-    );
+    await assertModalTitle(page, `Add client scopes to ${testClientId}`);
+    await clickSelectRow(page, "Choose a mapper type", "optional-scope");
     await clickAddScope(page, "Optional");
     await assertNotificationMessage(page, "Scope mapping updated");
-    await searchItem(page, placeHolder, clientScopeNameOptionalType);
+    await searchItem(page, placeHolder, "optional-scope");
     await assertTableRowsLength(page, tableName, 1);
-    await assertRowExists(page, clientScopeNameOptionalType);
+    await assertRowExists(page, "optional-scope");
     await assertTableCellDropdownValue(page, "Optional");
   });
 
-  const itemName = clientScopeName + 0;
-  test(`Should change item AssignedType to default from search bar`, async ({
+  test("changes item AssignedType to default from search bar", async ({
     page,
   }) => {
-    await searchItem(page, placeHolder, itemName);
+    await using testBed = await createTestBed();
+    const testClientId = "test-client";
+    const { id } = await adminClient.createClient({
+      realm: testBed.realm,
+      clientId: testClientId,
+      protocol: "openid-connect",
+      publicClient: false,
+    });
+    await adminClient.createClientScope({
+      ...clientScope,
+      name: "changeable-scope",
+      realm: testBed.realm,
+    });
+    await adminClient.addDefaultClientScopeInClient(
+      "changeable-scope",
+      testClientId,
+      testBed.realm,
+    );
+
+    await login(page, {
+      to: toClient({
+        realm: testBed.realm,
+        clientId: id!,
+        tab: "clientScopes",
+      }),
+    });
+
+    await searchItem(page, placeHolder, "changeable-scope");
     await assertTableRowsLength(page, tableName, 1);
-    await clickSelectRow(page, tableName, itemName);
+    await clickSelectRow(page, tableName, "changeable-scope");
     await selectChangeType(page, "Default");
     await assertNotificationMessage(page, "Scope mapping updated");
-    await searchItem(page, placeHolder, itemName);
+    await searchItem(page, placeHolder, "changeable-scope");
     await assertTableRowsLength(page, tableName, 1);
     await assertTableCellDropdownValue(page, "Default");
-    await assertRowExists(page, itemName);
+    await assertRowExists(page, "changeable-scope");
   });
 
-  test("Should show items on next page are more than 11", async ({ page }) => {
+  test("shows items on next page are more than 11", async ({ page }) => {
+    await using testBed = await createTestBed();
+    const testClientId = "test-client";
+    const { id } = await adminClient.createClient({
+      realm: testBed.realm,
+      clientId: testClientId,
+      protocol: "openid-connect",
+      publicClient: false,
+    });
+    // Create enough scopes to trigger pagination
+    for (let i = 0; i < 15; i++) {
+      await adminClient.createClientScope({
+        ...clientScope,
+        name: `pagination-scope-${i}`,
+        realm: testBed.realm,
+      });
+      await adminClient.addDefaultClientScopeInClient(
+        `pagination-scope-${i}`,
+        testClientId,
+        testBed.realm,
+      );
+    }
+
+    await login(page, {
+      to: toClient({
+        realm: testBed.realm,
+        clientId: id!,
+        tab: "clientScopes",
+      }),
+    });
+
     await clickNextPageButton(page);
     const rows = await getTableData(page, tableName);
     expect(rows.length).toBeGreaterThan(1);
   });
 
-  test("Should remove client scope", async ({ page }) => {
-    await searchItem(page, placeHolder, clientScopeName + "0");
-    await clickRowKebabItem(page, clientScopeName + "0", "Remove");
+  test("removes client scope", async ({ page }) => {
+    await using testBed = await createTestBed();
+    const testClientId = "test-client";
+    const { id } = await adminClient.createClient({
+      realm: testBed.realm,
+      clientId: testClientId,
+      protocol: "openid-connect",
+      publicClient: false,
+    });
+    await adminClient.createClientScope({
+      ...clientScope,
+      name: "removable-scope",
+      realm: testBed.realm,
+    });
+    await adminClient.addDefaultClientScopeInClient(
+      "removable-scope",
+      testClientId,
+      testBed.realm,
+    );
+
+    await login(page, {
+      to: toClient({
+        realm: testBed.realm,
+        clientId: id!,
+        tab: "clientScopes",
+      }),
+    });
+
+    await searchItem(page, placeHolder, "removable-scope");
+    await clickRowKebabItem(page, "removable-scope", "Remove");
     await confirmModal(page);
     await assertNotificationMessage(page, msgScopeMappingRemoved);
-    await searchItem(page, placeHolder, clientScopeName + "0");
+    await searchItem(page, placeHolder, "removable-scope");
     await assertEmptyTable(page);
   });
 
-  test("Should remove multiple client scopes from search bar", async ({
-    page,
-  }) => {
-    const itemName1 = clientScopeName + 1;
-    const itemName2 = clientScopeName + 2;
-    await searchItem(page, placeHolder, clientScopeName);
+  test("removes multiple client scopes from search bar", async ({ page }) => {
+    await using testBed = await createTestBed();
+    const testClientId = "test-client";
+    const { id } = await adminClient.createClient({
+      realm: testBed.realm,
+      clientId: testClientId,
+      protocol: "openid-connect",
+      publicClient: false,
+    });
+    // Create multiple scopes
+    for (let i = 1; i <= 5; i++) {
+      await adminClient.createClientScope({
+        ...clientScope,
+        name: `multi-scope-${i}`,
+        realm: testBed.realm,
+      });
+      await adminClient.addDefaultClientScopeInClient(
+        `multi-scope-${i}`,
+        testClientId,
+        testBed.realm,
+      );
+    }
+
+    await login(page, {
+      to: toClient({
+        realm: testBed.realm,
+        clientId: id!,
+        tab: "clientScopes",
+      }),
+    });
+
+    await searchItem(page, placeHolder, "multi-scope");
     await assertTableRowsLength(page, tableName, 5);
-    await clickSelectRow(page, tableName, itemName1);
-    await clickSelectRow(page, tableName, itemName2);
+    await clickSelectRow(page, tableName, "multi-scope-1");
+    await clickSelectRow(page, tableName, "multi-scope-2");
     await clickTableToolbarItem(page, "Remove", true);
     await assertNotificationMessage(page, msgScopeMappingRemoved);
-    await searchItem(page, placeHolder, clientScopeName);
+    await searchItem(page, placeHolder, "multi-scope");
     await assertTableRowsLength(page, tableName, 3);
-    await assertRowExists(page, itemName1, false);
-    await assertRowExists(page, itemName2, false);
+    await assertRowExists(page, "multi-scope-1", false);
+    await assertRowExists(page, "multi-scope-2", false);
   });
 });
 
-test.describe.serial("Client scopes evaluate subtab", () => {
-  const clientName = "testClient";
-  const userName = "admin-a";
-  const realmName = `clients-realm-${uuid()}`;
-
-  test.beforeAll(async () => {
-    await adminClient.createRealm(realmName);
-    await adminClient.createClient({
-      realm: realmName,
+test.describe("Client scopes evaluate subtab", () => {
+  test("checks effective protocol mappers list", async ({ page }) => {
+    await using testBed = await createTestBed();
+    const { id: clientId } = await adminClient.createClient({
+      realm: testBed.realm,
       protocol: "openid-connect",
-      clientId: clientName,
+      clientId: "test-client",
       publicClient: false,
     });
-    await adminClient.createUser({
-      realm: realmName,
-      username: userName,
-      enabled: true,
+
+    await login(page, {
+      to: toClient({
+        realm: testBed.realm,
+        clientId: clientId!,
+        tab: "clientScopes",
+      }),
     });
-  });
 
-  test.afterAll(() => adminClient.deleteRealm(realmName));
-
-  test.beforeEach(async ({ page }) => {
-    await login(page);
-    await goToRealm(page, realmName);
-    await goToClients(page);
-  });
-
-  test("check effective protocol mappers list", async ({ page }) => {
-    await searchItem(page, "Search for client", clientName);
-    await clickTableRowItem(page, clientName);
-    await goToClientScopesTab(page);
     await goToClientScopeEvaluateTab(page);
 
     const rows = await getTableData(page, "Effective protocol mappers");
     expect(rows.length).toBeGreaterThan(1);
   });
 
-  test("check generated id token and user info", async ({ page }) => {
-    await searchItem(page, "Search for client", clientName);
-    await clickTableRowItem(page, clientName);
-    await goToClientScopesTab(page);
+  test("checks generated id token and user info", async ({ page }) => {
+    await using testBed = await createTestBed({
+      users: [
+        {
+          username: "test-user",
+          enabled: true,
+        },
+      ],
+    });
+    const { id: clientId } = await adminClient.createClient({
+      realm: testBed.realm,
+      protocol: "openid-connect",
+      clientId: "test-client",
+      publicClient: false,
+    });
+
+    await login(page, {
+      to: toClient({
+        realm: testBed.realm,
+        clientId: clientId!,
+        tab: "clientScopes",
+      }),
+    });
+
     await goToClientScopeEvaluateTab(page);
 
     await assertNoAccessTokenGenerated(page);
@@ -234,10 +399,10 @@ test.describe.serial("Client scopes evaluate subtab", () => {
     await assertNoUserInfoGenerated(page);
 
     await goToGenerateAccessTokenTab(page);
-    await selectUser(page, userName);
+    await selectUser(page, "test-user");
 
-    await assertHasUserInfoGenerated(page, userName);
-    await assertHasAccessTokenGenerated(page, userName);
-    await assertHasIdTokenGenerated(page, userName);
+    await assertHasUserInfoGenerated(page, "test-user");
+    await assertHasAccessTokenGenerated(page, "test-user");
+    await assertHasIdTokenGenerated(page, "test-user");
   });
 });
