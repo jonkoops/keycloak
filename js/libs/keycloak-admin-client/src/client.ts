@@ -8,16 +8,17 @@ import { ClientScopes } from "./resources/clientScopes.js";
 import { Components } from "./resources/components.js";
 import { Groups } from "./resources/groups.js";
 import { IdentityProviders } from "./resources/identityProviders.js";
-import { Realms } from "./resources/realms.js";
 import { Organizations } from "./resources/organizations.js";
-import { Workflows } from "./resources/workflows.js";
+import { Realms } from "./resources/realms.js";
 import { Roles } from "./resources/roles.js";
 import { ServerInfo } from "./resources/serverInfo.js";
 import { Users } from "./resources/users.js";
 import { UserStorageProvider } from "./resources/userStorageProvider.js";
 import { WhoAmI } from "./resources/whoAmI.js";
+import { Workflows } from "./resources/workflows.js";
 import { Credentials, getToken } from "./utils/auth.js";
 import { defaultBaseUrl, defaultRealm } from "./utils/constants.js";
+import { DecodedToken, decodeToken } from "./utils/decode-token.js";
 
 export interface TokenProvider {
   getAccessToken: () => Promise<string | undefined>;
@@ -29,6 +30,8 @@ export interface ConnectionConfig {
   requestOptions?: RequestInit;
   requestArgOptions?: Pick<RequestArgs, "catchNotFound">;
 }
+
+const MIN_VALIDITY = 5; // in seconds
 
 export class KeycloakAdminClient {
   // Resources
@@ -56,6 +59,8 @@ export class KeycloakAdminClient {
   public scope?: string;
   public accessToken?: string;
   public refreshToken?: string;
+  #accessTokenDecoded?: DecodedToken;
+  #refreshTokenDecoded?: DecodedToken;
 
   #requestOptions?: RequestInit;
   #globalRequestArgOptions?: Pick<RequestArgs, "catchNotFound">;
@@ -95,8 +100,9 @@ export class KeycloakAdminClient {
       credentials,
       requestOptions: this.#requestOptions,
     });
-    this.accessToken = accessToken;
-    this.refreshToken = refreshToken;
+
+    this.setAccessToken(accessToken);
+    this.setRefreshToken(refreshToken);
   }
 
   public registerTokenProvider(provider: TokenProvider) {
@@ -109,6 +115,12 @@ export class KeycloakAdminClient {
 
   public setAccessToken(token: string) {
     this.accessToken = token;
+    this.#accessTokenDecoded = decodeToken(token);
+  }
+
+  public setRefreshToken(token: string) {
+    this.refreshToken = token;
+    this.#refreshTokenDecoded = decodeToken(token);
   }
 
   public async getAccessToken() {
@@ -116,7 +128,24 @@ export class KeycloakAdminClient {
       return this.#tokenProvider.getAccessToken();
     }
 
+    if (this.isTokenExpired()) {
+      // TODO: implement token refresh logic
+    }
+
     return this.accessToken;
+  }
+
+  public isTokenExpired(): boolean {
+    if (typeof this.#accessTokenDecoded?.exp !== "number") {
+      return false;
+    }
+
+    const expiresIn =
+      this.#accessTokenDecoded.exp -
+      Math.ceil(new Date().getTime() / 1000) -
+      MIN_VALIDITY;
+
+    return expiresIn < 0;
   }
 
   public getRequestOptions() {
